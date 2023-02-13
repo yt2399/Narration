@@ -1,0 +1,62 @@
+
+
+[
+    {
+        "type": "SEND_TO_ONE_REQUEST",
+        "body": {
+            "type": "text || img || voice", // 发送的数据类型
+            "userId": 9,
+            "toUser": 13,
+            // 文本
+            "content": {
+                "text": "哈喽"
+            },
+            "content":{
+                "url": "blob:http://localhost:8080/49d68e6f-6f2a-4d06-9fd4-ec606e79d1c8",
+                "w": 200, // 宽度
+                "h": 200 // 高度
+            },
+            // 语音
+            "content": {
+                "url": "_doc/uniapp_temp_1603265466159/recorder/1603265603072.mp3",
+                "length": "00:06" // 时长
+            }
+        }
+    }
+]
+
+
+// 返回私聊消息列表
+
+[
+    {
+        "type":"SEND_TO_USER_REQUEST",
+        "body":{
+            // 文本
+            "type": "text",
+            "content":{
+                "text":"测试"
+            },
+            // 图片
+            "type": "img",
+            "content":{
+                "url":"blob:http://localhost:8080/49d68e6f-6f2a-4d06-9fd4-ec606e79d1c8",
+                "w":200,
+                "h":200,
+            },
+            // 语音
+            "type": "voice",
+            "content":{
+                "url": "_doc/uniapp_temp_1603265466159/recorder/1603265603072.mp3",	
+                "length": "00:06"	// 时长
+            },
+            "createTime":1603264147696,
+            "toUser":"TQL",
+            "toUserId":13,
+            "toUserImg":"http://39.99.156.255:8080/CircleChat/img/5993d7c4-8a22-4a4e-a2a5-ebacd0b0b278.jpeg",
+            "userId":9,
+            "userImg":"http://39.99.156.255:8080/CircleChat/img/a274f203-ea22-4594-be31-7449c3e52bca.jpeg",
+            "username":"LiRyan"
+        }
+    }
+]
