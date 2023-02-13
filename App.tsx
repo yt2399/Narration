@@ -1,12 +1,33 @@
+ 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import {  StyleSheet  } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {useColorScheme} from './hooks/useHooks';
+import Navigation from './navigation';
+import { useFonts } from 'expo-font';
+
+
 
 export default function App() {
+
+  const colorScheme = useColorScheme()
+  
+  const [fontsLoaded] = useFonts({
+    'Inter-Black': require('./assets/fonts/Alimama_ShuHeiTi_Bold.ttf'),
+  });
+
+  if (!fontsLoaded) {
+    return null;
+  }
+  
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
+
+    <SafeAreaProvider style={{ flex: 1, backgroundColor: "#fff" }}>
+      {/* 黑夜模式 */}
+      <Navigation colorScheme={colorScheme} />
+      {/* {state.isActivityIndicator && <Loading />} */}
       <StatusBar style="auto" />
-    </View>
+    </SafeAreaProvider>
   );
 }
 
