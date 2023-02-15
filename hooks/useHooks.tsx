@@ -1,11 +1,13 @@
-import {
-  ColorSchemeName,
-  Dimensions,
-  useColorScheme as _useColorScheme,
-} from "react-native";
+import { ColorSchemeName, Dimensions, useColorScheme as _useColorScheme } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import Colors from "../constants/Colors";
+import * as SQLite from "expo-sqlite";
+import { QueryDemandType, SingleChatType } from "../types";
+
+const userId = "JDVO7z94uUDeVsLctotJu11";
+const friendsId = "kYSIrafylwHX8iV11";
+
 // 配色方案
 // useColorScheme值总是浅色或深色的，但是内置的
 // type表示它可以为空。这在实践中是不会发生的，所以
@@ -14,19 +16,29 @@ export function useColorScheme(): NonNullable<ColorSchemeName> {
   return _useColorScheme() as NonNullable<ColorSchemeName>;
 }
 
-export function useThemeColor(
-  colorName: keyof typeof Colors.light & keyof typeof Colors.dark
-) {
+
+/**
+ * 返回当前手机系统主题
+ */
+export function useThemeColor(colorName: keyof typeof Colors.light & keyof typeof Colors.dark) {
   const theme = useColorScheme();
 
   return Colors[theme][colorName];
 }
 
+
+/**
+ * 获取手机一屏高宽
+ */
 export function useWindow(type: "Width" | "Height") {
   const WINDOW = Dimensions.get("window");
   return type === "Width" ? WINDOW.width : WINDOW.height;
 }
 
+
+/**
+ * 调用系统相册
+ */
 export const usePickImage = async () => {
   // const [status, requestPermission] = ImagePicker.useCameraPermissions();
   // //获取读取权限
@@ -46,6 +58,10 @@ export const usePickImage = async () => {
   }
 };
 
+/**
+ * 获取视频缩略图
+ * @param url 视频地址
+ */
 export const useThumbnail = async (url: string) => {
   try {
     const res = await VideoThumbnails.getThumbnailAsync(url, {
@@ -59,12 +75,11 @@ export const useThumbnail = async (url: string) => {
   }
 };
 
-
 /**
  * 将string转为二进制字节
  * @param str string
  */
- export function useStringToBytes(str: string) {
+export function useStringToBytes(str: string) {
   var ch,
     st,
     re: any[] = [];
@@ -96,4 +111,98 @@ export function useByteToString(Byte: Iterable<number>) {
   } catch (error) {
     console.error(error, "转string错误");
   }
+}
+/**
+ * 初始化一个sql库，如果没有就会创建
+ */
+export function useCreateSql() {
+  return SQLite.openDatabase(`${userId}.db`, "1.0.1");
+}
+
+/**
+ * 创建单聊对话表
+ */
+export function useCreateSingleChatContent() {
+  const SQLiteDb = useCreateSql();
+
+  return new Promise((resolve, reject) => {
+    SQLiteDb.transaction(
+      Db => {
+        Db.executeSql(
+          `CREATE TABLE IF NOT EXISTS u_chat_content (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id TEXT NOT NULL,
+        recipient TEXT NOT NULL,
+        type TEXT NOT NULL,
+        content TEXT NOT NULL,
+        time_stamp BIGINT NOT NULL);`
+        );
+      },
+      error => reject(error),
+      () => resolve(true)
+    );
+  });
+}
+
+/**
+ * 创建好友信息列表
+ */
+export function useCreateFriendsInfoList() {
+  const SQLiteDb = useCreateSql();
+
+  return new Promise((resolve, reject) => {
+    SQLiteDb.transaction(
+      Db => {
+        Db.executeSql(
+          `CREATE TABLE IF NOT EXISTS u_friends_info (
+        friends_id TEXT PRIMARY KEY ,
+        avatar TEXT NOT NULL,
+        friends_name TEXT NOT NULL,
+        final_statement TEXT NOT NULL,
+        final_time TEXT NOT NULL)`
+        );
+      },
+      error => reject(error),
+      () => resolve(true)
+    );
+  });
+}
+
+/**
+ * 新增单聊好友聊天记录
+ */
+export function useAddSingleChatContent(parameter: SingleChatType) {
+  const { senderId, recipient, type, content, timeStamp } = parameter;
+  const SQLiteDb = useCreateSql();
+
+  return new Promise((resolve, reject) => {
+    SQLiteDb.transaction(
+      Db => {
+        Db.executeSql(
+          "INSERT INTO u_chat_content (sender_id,recipient,type,content,time_stamp) VALUES (?,?,?,?,?)",
+          [senderId, recipient, type, content, timeStamp]
+        );
+      },
+      error => reject(error),
+      () => resolve(true)
+    );
+  });
+}
+
+/**
+ * 查询记录
+ */
+export function useQueryDemand(parameter: QueryDemandType) {
+  const SQLiteDb = useCreateSql();
+  const { surface, where, whereParameter } = parameter;
+  return new Promise((resolve, reject) => {
+    SQLiteDb.exec(
+      [{ sql: `SELECT * FROM ${surface} WHERE ${where} = ?`, args: [whereParameter] }],
+      false,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
+  });
 }
