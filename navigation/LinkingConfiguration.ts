@@ -13,20 +13,16 @@ const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [Linking.createURL("/")],
   config: {
     screens: {
+      Home: {
+        //设置子页面路由
+        screens: {
+          HomeScreen: "home",
+        },
+      },
       Dialogue: {
         //设置子页面路由
         screens: {
           DialogueScreen: "Dialogue",
-        },
-      },
-      Home: {
-        //设置子页面路由
-        screens: {
-          Home: {
-            screens: {
-              HomeScreen: "home",
-            },
-          },
         },
       },
       Mine: {

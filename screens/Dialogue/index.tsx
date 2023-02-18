@@ -1,13 +1,37 @@
-import { StyleSheet, View, Text, FlatList, TextInput, TouchableOpacity, Platform, KeyboardAvoidingView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Platform,
+  KeyboardAvoidingView,
+  RefreshControl,
+  Keyboard,
+  KeyboardEvent,
+  LayoutChangeEvent,
+} from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import React, { useEffect, useRef, useState } from "react";
-import { AntDesign, FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome5 } from "@expo/vector-icons";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
-import { useThemeColor } from "../../hooks/useHooks";
+import {
+  useAddSingleChatContent,
+  useCreateSingleChatContent,
+  useQueryDemand,
+  useThemeColor,
+  useWindow,
+  usePickImage,
+} from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
+import { SingleChatType } from "../../types";
+import { useRecoilState } from "recoil";
+import { userId } from "../../hooks/Atoms";
+
+import DialogueHead from "./DialogueHead";
+// import { webSocket } from "../../hooks/webSocket";
+
 const DATA = [
   {
     id: "bd7acbea-c1b1-46c2-aed5-3ad53abb28ba",
@@ -81,7 +105,8 @@ const DATA = [
     reverse: true,
     body: {
       type: "video",
-      content: "https://cdn.bestseller.com.cn/assets/db_common/ONLY/image/ONLYDA00534097-1672904482020.mp4",
+      content:
+        "https://cdn.bestseller.com.cn/assets/db_common/ONLY/image/ONLYDA00534097-1672904482020.mp4",
     },
   },
   {
@@ -102,17 +127,17 @@ const DATA = [
   },
 ];
 
-type DATA = {
-  id: string;
-  reverse: boolean;
-  body: {
-    type: string;
-    content: string;
-  };
-};
-
+const friendsId = "kYSIrafylwHX8iV11";
+const Height = useWindow("Height");
 const Dialogue = () => {
+  let limit = 0;
   const [value, setValue] = useState("");
+  const [chatData, setChatData] = useState<SingleChatType[] | []>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isRefreshControl, setIsRefreshControl] = useState(true);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [openMore, setOpenMore] = useState(false);
+  const FlashLists = useRef<FlashList<SingleChatType>>(null);
   //true:文本输入模式
   //false:语音输入
   const [mode, setMode] = useState(true);
@@ -121,145 +146,267 @@ const Dialogue = () => {
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const color = useThemeColor("text");
+
+  // const [message, setMessage] = useRecoilState(messageState);
+  const [userIds] = useRecoilState(userId);
   const onChangeText = (text: string) => {
     setValue(text);
   };
 
-  useEffect(()=>{
-     // ActionSheets.current?.show();
-  },[])
-  const dd = () => {
-    console.log(111);
-  };
-  return (
-    <KeyboardAvoidingView behavior={Platform.OS == "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-      <MaterialCommunityIcons name='keyboard-settings' size={15} color='black' style={{ display: "none" }} />
-      <SafeAreaView style={{ flex: 1, backgroundColor }}>
-        <View style={[styles.DialogueHead, styleAll.center]}>
-          <AntDesign name='arrowleft' size={24} color={color} />
-          <View style={styles.headTitle}>
-            <Text style={{ ...styles.name, color }}>Yi Tao</Text>
-            <Text style={styles.synopsis} numberOfLines={1}>
-              生而为人，死而后已111111111111111111111111111111111111111111111
-            </Text>
-          </View>
-          <View style={styleAll.center}>
-            <FontAwesome style={styles.iconRight} name='phone' size={20} color={color} />
-            <FontAwesome5 name='video' size={20} color={color} />
-          </View>
-        </View>
+  useEffect(() => {
+    //监听键盘拉起
+    const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", onKeyboardDidShow);
+    //监听键盘隐藏
+    const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", onKeyboardDidHide);
 
+    //监听webSocket连接成功
+
+    // webSocket.addEventListener('message', function (e) {
+
+    //   console.log(e.data,'页面二');
+
+    // });
+
+
+    //进入聊天窗口获取12条最新数据
+    useCreateSingleChatContent()
+      .catch(err => {
+        console.log(err);
+      })
+      .then(async () => {
+        try {
+          await wait();
+        } catch (error) {
+          console.log(error);
+        }
+      });
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+
+  const wait = () => {
+    return new Promise(resolve => {
+      limit += 12;
+      useQueryDemand(
+        {
+          surface: "u_chat_content",
+          senderId: userIds,
+          recipient: friendsId,
+        },
+        limit
+      ).then((result: any) => {
+        const { rows } = result[0] as { rows: SingleChatType[] };
+        console.log(rows, "查询的符合条件数据");
+        setChatData(rows.reverse());
+        resolve(limit);
+        if (limit > rows.length) {
+          setIsRefreshControl(false);
+          return;
+        }
+      });
+    });
+  };
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // setProductList([]);
+    wait().then(() => setRefreshing(false));
+  }, []);
+
+  function scrollToBottom( animated?: boolean) {
+    // if (e.stopPropagation && FlashLists.current) {
+
+    // }
+
+    setTimeout(() => {
+      FlashLists.current?.scrollToEnd({ animated });
+    },200);
+  }
+
+  // const useWatchWs = () => {
+  //   // 监听 WebSocket 事件
+  //   webSocket.onopen = () => {
+  //     console.log("WebSocket 连接已建立");
+  //   };
+  //   webSockets.onmessage = event => {
+  //     console.log("收到消息：", event.data);
+  //   };
+  //   webSockets.onerror = error => {
+  //     console.log("WebSocket 错误：", error);
+  //   };
+  //   // socket.onclose = () => {
+  //   //   console.log('WebSocket 连接已关闭');
+  //   // };
+  // };
+
+  const handleSendChatContent = async () => {
+    const now = Math.floor(new Date().getTime() / 1000);
+    const content: SingleChatType = {
+      senderId: userIds,
+      recipient: friendsId,
+      type: "text",
+      content: value,
+      timeStamp: now,
+    };
+
+    const dd = {
+      type:'',
+      msg:content
+    }
+
+    try {
+      await useAddSingleChatContent(content);
+      setChatData([...chatData, content]);
+      setValue("");
+      scrollToBottom(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onKeyboardDidShow = (event: KeyboardEvent) => {
+    setKeyboardHeight(event.endCoordinates.height);
+    setOpenMore(false);
+    // scrollViewRef.current.scrollTo({ x: 0, y: -keyboardHeight, animated: true });
+  };
+
+  const onKeyboardDidHide = () => {
+    setKeyboardHeight(0);
+  };
+
+  const handleOpenExpression = () => {
+    setOpenMore(!openMore);
+    Keyboard.dismiss();
+  };
+
+  return (
+    <View style={{ flex: 1, backgroundColor }}>
+      <MaterialCommunityIcons
+        name='keyboard-settings'
+        size={15}
+        color='black'
+        style={{ display: "none" }}
+      />
+
+      <DialogueHead />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? (chatData.length > 7 ? "position" : "height") : undefined}
+        style={{ flex: 1 }}
+      >
         <View
           style={{
-            flex: 1,
-            marginBottom: 70,
+            width: "100%",
+            height: Height - 150,
+            backgroundColor: secondaryBack,
+            position: "relative",
+            bottom:
+              Platform.OS === "ios"
+                ? 0
+                : chatData.length > 6
+                ? keyboardHeight
+                  ? keyboardHeight
+                  : 0
+                : 0,
+            paddingBottom: Platform.OS === "ios" ? 70 : 0,
           }}
         >
           <FlashList
-            data={DATA}
+            data={chatData}
             renderItem={({ item }) => <DialogueContents {...item} />}
-            contentContainerStyle={{ backgroundColor: secondaryBack }}
-            keyExtractor={item => item.id}
+            keyExtractor={item => String(item.timeStamp)}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={119}
+            initialScrollIndex={chatData.length > 11 ? 11 : 0}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={isRefreshControl ? onRefresh : undefined}
+                title={isRefreshControl ? "加载聊天内容" : "已全部加载完毕"}
+              />
+            }
+            onLayout={e => scrollToBottom()}
+            ref={FlashLists}
           />
         </View>
 
         <View
           style={{
             ...styles.toolbar,
-            marginBottom: Platform.OS === "ios" ? 35 : 0,
+            height: openMore ? 300 : 75,
             backgroundColor,
           }}
         >
-          <TouchableOpacity activeOpacity={0.7} onPress={() => setMode(!mode)}>
-            <View style={{ ...styles.toolbarAudio, borderColor: color }}>
-              {mode ? <AntDesign name='wifi' size={19} color={color} /> : <MaterialCommunityIcons name='keyboard-settings' size={19} color={color} />}
-            </View>
-          </TouchableOpacity>
+          <View style={[{ height: 70, width: "100%" }, styleAll.center]}>
+            <TouchableOpacity activeOpacity={0.7} onPress={() => setMode(!mode)}>
+              <View style={{ ...styles.toolbarAudio, borderColor: color }}>
+                {mode ? (
+                  <AntDesign name='wifi' size={19} color={color} />
+                ) : (
+                  <MaterialCommunityIcons name='keyboard-settings' size={19} color={color} />
+                )}
+              </View>
+            </TouchableOpacity>
 
-          <TextInput
-            style={{
-              ...styles.toolbarTextInput,
-              backgroundColor: threeLevelBack,
-            }}
-            onChangeText={text => onChangeText(text)}
-            value={value}
-            multiline={false}
-            cursorColor={"#000"}
-            returnKeyType={"send"}
-            clearButtonMode={"while-editing"}
-            selectTextOnFocus={true}
-            enablesReturnKeyAutomatically={true}
-            onSubmitEditing={dd}
-          />
+            <TextInput
+              style={{ ...styles.toolbarTextInput, backgroundColor: threeLevelBack }}
+              onChangeText={text => onChangeText(text)}
+              value={value}
+              multiline={false}
+              cursorColor={backgroundColor}
+              returnKeyType={"send"}
+              clearButtonMode={"while-editing"}
+              selectTextOnFocus={true}
+              enablesReturnKeyAutomatically={true}
+              onSubmitEditing={handleSendChatContent}
+            />
+            <AntDesign
+              name='smileo'
+              onPress={handleOpenExpression}
+              style={{ marginHorizontal: 10 }}
+              size={29}
+              color={color}
+            />
+            <AntDesign onPress={usePickImage} name='pluscircleo' size={29} color={color} />
+          </View>
         </View>
-      </SafeAreaView>
 
-      <ActionSheet
-        ref={ActionSheets}
-        useBottomSafeAreaPadding
-        containerStyle={{
-          height: "50%",
-          backgroundColor: threeLevelBack,
-        }}
-      >
-        <Text>111111111</Text>
-      </ActionSheet>
-
-    </KeyboardAvoidingView>
+        <ActionSheet
+          ref={ActionSheets}
+          useBottomSafeAreaPadding
+          containerStyle={{
+            height: "50%",
+            backgroundColor: threeLevelBack,
+          }}
+        >
+          <Text>111111111</Text>
+        </ActionSheet>
+      </KeyboardAvoidingView>
+      {/* </KeyboardAvoidingView> */}
+    </View>
   );
 };
 
 export default Dialogue;
 
 const styles = StyleSheet.create({
-  DialogueHead: {
-    height: 60,
-    width: "100%",
-    paddingHorizontal: 20,
-    shadowOpacity: 0.5,
-    shadowRadius: 10,
-    shadowColor: "#fff",
-    shadowOffset: { width: 0, height: 10 },
-  },
-  headTitle: {
-    flex: 1,
-    height: "100%",
-    justifyContent: "space-evenly",
-    marginLeft: 20,
-  },
-  name: {
-    fontFamily: "Inter-Black",
-    fontSize: 20,
-  },
-  synopsis: {
-    paddingRight: 25,
-    fontFamily: "Inter-Black",
-    fontSize: 12,
-    color: "#adb5bd",
-  },
-  iconRight: {
-    marginTop: 3,
-    marginRight: 20,
-  },
   DialogueShowMain: {
     flex: 1,
     marginBottom: 70,
   },
   toolbar: {
     position: "absolute",
-    bottom: 0,
+    bottom: -1,
     display: "flex",
     flexDirection: "row",
-    alignItems: "center",
     width: "100%",
-    height: 70,
-    padding: 10,
+    paddingHorizontal: 10,
   },
   toolbarTextInput: {
     flex: 1,
-    height: "100%",
+    height: 50,
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
@@ -267,7 +414,13 @@ const styles = StyleSheet.create({
   toolbarAudio: {
     borderRadius: 999,
     borderWidth: 2,
-    padding: 5,
+    padding: 3,
     marginRight: 10,
+  },
+  hitm: {
+    fontFamily: "Inter-Black",
+    padding: 5,
+    opacity: 0.5,
+    borderRadius: 5,
   },
 });

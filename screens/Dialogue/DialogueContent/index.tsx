@@ -1,11 +1,4 @@
-import {
-  Image,
-  ListRenderItemInfo,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, KeyboardAvoidingView, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import { useThemeColor, useThumbnail, useWindow } from "../../../hooks/useHooks";
 import ImageAout from "../../../components/ImageAout";
@@ -13,7 +6,10 @@ import { VideoThumbnailsResult } from "expo-video-thumbnails";
 import { AntDesign } from "@expo/vector-icons";
 import PopupVideo from "../../../components/PopupVideo";
 import ImageView from "react-native-image-viewing";
+import { SingleChatContentType, SingleChatType } from "../../../types";
 const width = useWindow("Width");
+const userId = "JDVO7z94uUDeVsLctotJu11";
+const friendsId = "kYSIrafylwHX8iV11";
 
 const avatar =
   "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -21,26 +17,19 @@ const avatar =
 const avatar2 =
   "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fblog%2F202106%2F28%2F20210628204020_17863.thumb.1000_0.jpg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1678716425&t=f557d5986b25451a91c201fb8988107c";
 
-type Data = {
-  id: string;
-  reverse: boolean;
-  body: {
-    type: string;
-    content: string;
-  };
-};
+const DialogueContents = (props: SingleChatType) => {
+  // const {
+  //   reverse,
+  //   body: { type, content },
+  // } = props;
 
-const DialogueContents = (props: Data) => {
-  const {
-    reverse,
-    body: { type, content },
-  } = props;
+  const {  senderId, recipient, type, content, timeStamp } = props;
 
   const [visible, setVisible] = useState(false);
   const [visibleTow, setVisibleTow] = useState(false);
   const [imageUri, setImageUri] = useState([{ uri: "" }]);
   const [videoUri, setVideoUri] = useState("");
-//   const color = useThemeColor( 'text');
+  //   const color = useThemeColor( 'text');
   const [thumbnail, setThumbnail] = useState<VideoThumbnailsResult>({
     width: 0,
     height: 0,
@@ -61,24 +50,33 @@ const DialogueContents = (props: Data) => {
     setVideoUri(uri);
     setVisibleTow(true);
   };
+
+  const verificationSender = () => {
+    return senderId !== userId;
+  };
   return (
+    // <KeyboardAvoidingView
+    //   behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    //   keyboardVerticalOffset={100}
+    //   style={{flex:1}}
+    // >
     <View
       style={{
         ...styles.direction,
-        flexDirection: reverse ? "row" : "row-reverse",
+        flexDirection: verificationSender() ? "row" : "row-reverse",
       }}
     >
       <View
         style={{
           ...styles.content,
-          flexDirection: reverse ? "row" : "row-reverse",
+          flexDirection: verificationSender() ? "row" : "row-reverse",
         }}
       >
         <View style={styles.avatar}>
           <Image
             style={styles.avatar}
             source={{
-              uri: reverse ? avatar2 : avatar,
+              uri: verificationSender() ? avatar2 : avatar,
             }}
           />
         </View>
@@ -89,42 +87,25 @@ const DialogueContents = (props: Data) => {
             padding: type === "img" || type === "video" ? 0 : 10,
           }}
         >
-          <View
-            style={reverse ? styles.triangleLeft : styles.triangleRight}
-          ></View>
+          <View style={verificationSender() ? styles.triangleLeft : styles.triangleRight}></View>
           {(type === "text" && <Text numberOfLines={20}>{content}</Text>) ||
             (type === "img" && (
               <ImageAout
                 source={{
                   uri: content,
                 }}
-                width={110}
                 style={{ ...styles.ImagesStyle }}
                 Press={() => handleImageView(content)}
               />
             )) ||
             (type === "video" && (
               <View onLayout={async () => await getThumbnail(content)}>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  onPress={() => ChangeVideoVisible(content)}
-                >
+                <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
                   <Image
-                    source={{
-                      uri: thumbnail.uri,
-                    }}
-                    style={{
-                      ...styles.ImagesStyle,
-                      width: 200,
-                      height: 130,
-                    }}
+                    source={{ uri: thumbnail.uri }}
+                    style={{ ...styles.ImagesStyle, width: 180, height: 130 }}
                   />
-                  <AntDesign
-                    name="play"
-                    size={30}
-                    color="#fff"
-                    style={styles.play}
-                  />
+                  <AntDesign name='play' size={30} color='#fff' style={styles.play} />
                 </TouchableOpacity>
               </View>
             ))}
@@ -138,6 +119,7 @@ const DialogueContents = (props: Data) => {
         onRequestClose={() => setVisible(false)}
       />
     </View>
+    // </KeyboardAvoidingView>
   );
 };
 
@@ -161,7 +143,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   ImagesStyle: {
-    minWidth: 110,
+    minWidth: 120,
     minHeight: 70,
     borderRadius: 5,
     overflow: "hidden",

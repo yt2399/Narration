@@ -3173,6 +3173,11 @@ expo-font@~11.0.1:
   dependencies:
     fontfaceobserver "^2.1.0"
 
+expo-haptics@~12.0.1:
+  version "12.0.1"
+  resolved "https://registry.npmmirror.com/expo-haptics/-/expo-haptics-12.0.1.tgz#151dc57bc01c1fa16d021e4714b23916bbc9f8e5"
+  integrity sha512-YubK3P3WTdjp5mFZcaF3ienqXHoDqzPpe61yTEIR5y+CVWqk+If9cC3ZYxn6lSp8KiNUmz7zC0GvUAVEqn8t6Q==
+
 expo-image-loader@~4.0.0:
   version "4.0.0"
   resolved "https://registry.npmmirror.com/expo-image-loader/-/expo-image-loader-4.0.0.tgz#a17e5f95a4c1671791168dd5dfc221bf2f88480c"
@@ -3662,6 +3667,11 @@ graphql@15.8.0:
   version "15.8.0"
   resolved "https://registry.npmmirror.com/graphql/-/graphql-15.8.0.tgz"
   integrity sha512-5gghUc24tP9HRznNpV2+FIoq3xKkj5dTQqf4v0CpdPbFVwFkWoxOM+o+2OC9ZSvjEMTjfmG9QT+gcvggTwW1zw==
+
+hamt_plus@1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmmirror.com/hamt_plus/-/hamt_plus-1.0.2.tgz#e21c252968c7e33b20f6a1b094cd85787a265601"
+  integrity sha512-t2JXKaehnMb9paaYA7J0BX8QQAY8lwfQ9Gjf4pg/mk4krt+cmwmU652HOoWonf+7+EQV97ARPMhhVgU1ra2GhA==
 
 has-flag@^3.0.0:
   version "3.0.0"
@@ -5626,6 +5636,11 @@ react-native-svg@13.4.0:
     css-select "^5.1.0"
     css-tree "^1.1.3"
 
+react-native-toast-notifications@^3.3.1:
+  version "3.3.1"
+  resolved "https://registry.npmmirror.com/react-native-toast-notifications/-/react-native-toast-notifications-3.3.1.tgz#c3d6f3b63a4df81c2912560d27878ea056672981"
+  integrity sha512-yc1Q2nOdIYvAf0GAIlmg8q42hiwpEHnLxkxJ6P+tN6jpcKZ1qzMXlgnmNdyF9cm9VOyHQexEP8952IKNAv1Olw==
+
 react-native-web@~0.18.9:
   version "0.18.12"
   resolved "https://registry.npmmirror.com/react-native-web/-/react-native-web-0.18.12.tgz"
@@ -5733,6 +5748,13 @@ recast@^0.20.4:
     esprima "~4.0.0"
     source-map "~0.6.1"
     tslib "^2.0.1"
+
+recoil@^0.7.6:
+  version "0.7.6"
+  resolved "https://registry.npmmirror.com/recoil/-/recoil-0.7.6.tgz#75297ecd70bbfeeb72e861aa6141a86bb6dfcd5e"
+  integrity sha512-hsBEw7jFdpBCY/tu2GweiyaqHKxVj6EqF2/SfrglbKvJHhpN57SANWvPW+gE90i3Awi+A5gssOd3u+vWlT+g7g==
+  dependencies:
+    hamt_plus "1.0.2"
 
 recyclerlistview@4.1.2:
   version "4.1.2"
