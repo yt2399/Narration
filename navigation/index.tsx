@@ -7,6 +7,8 @@ import Home from "../screens/Home";
 import Mine from "../screens/Mine";
 import Dialogue from "../screens/Dialogue";
 import { ColorSchemeName } from "react-native";
+import Cameras from "../screens/Camera";
+import Login from "../screens/Login";
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -26,10 +28,12 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
 function RootNavigator() {
   return (
     <Stack.Navigator>
-      
+      <Stack.Screen name='Login' component={Login} options={{ headerShown: false }}  />
       <Stack.Screen name='Home' component={Home} options={{ headerShown: false }} />
       <Stack.Screen name='Dialogue' component={Dialogue} options={{ headerShown: false }} />
+  
       <Stack.Screen name='Mine' component={Mine} options={{ headerShown: false }} />
+          <Stack.Screen name='Camera' component={Cameras} options={{ headerShown: false }}  />
     </Stack.Navigator>
   );
 }

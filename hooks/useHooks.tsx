@@ -5,7 +5,6 @@ import Colors from "../constants/Colors";
 import * as SQLite from "expo-sqlite";
 import { QueryDemandType, SingleChatType } from "../types";
 
-
 const userId = "JDVO7z94uUDeVsLctotJu11";
 const friendsId = "kYSIrafylwHX8iV11";
 
@@ -46,14 +45,20 @@ export const usePickImage = async () => {
   // if (!isImagePicker) return
 
   // 启动图片库不需要权限请求
-  const {assets} = await ImagePicker.launchImageLibraryAsync({
+  const { assets } = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
     allowsEditing: true,
     aspect: [4, 3],
     quality: 1,
   });
- 
-  return assets
+
+  return assets;
+};
+
+export const useCamera = async () => {
+  return await Promise.all([
+    
+  ]);
 };
 
 /**

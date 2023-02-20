@@ -1,7 +1,6 @@
 import {
   StyleSheet,
   View,
-  Text,
   TextInput,
   TouchableOpacity,
   Platform,
@@ -9,7 +8,6 @@ import {
   RefreshControl,
   Keyboard,
   KeyboardEvent,
-  LayoutChangeEvent,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -23,13 +21,18 @@ import {
   useThemeColor,
   useWindow,
   usePickImage,
+  useColorScheme,
 } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { SingleChatType } from "../../types";
 import { useRecoilState } from "recoil";
 import { userId } from "../../hooks/Atoms";
-
+import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
+import EmojiPicker from "rn-emoji-keyboard";
+import { EmojiType } from "rn-emoji-keyboard/lib/typescript/src/types";
+import More from "./More";
+
 // import { webSocket } from "../../hooks/webSocket";
 
 const DATA = [
@@ -141,13 +144,14 @@ const Dialogue = () => {
   //true:文本输入模式
   //false:语音输入
   const [mode, setMode] = useState(true);
+  const ColorScheme = useColorScheme();
   const ActionSheets = useRef<ActionSheetRef>(null);
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const color = useThemeColor("text");
-
-  // const [message, setMessage] = useRecoilState(messageState);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [emojiList, setEmojiList] = useState<Array<string>>([]);
   const [userIds] = useRecoilState(userId);
   const onChangeText = (text: string) => {
     setValue(text);
@@ -167,7 +171,6 @@ const Dialogue = () => {
 
     // });
 
-
     //进入聊天窗口获取12条最新数据
     useCreateSingleChatContent()
       .catch(err => {
@@ -186,6 +189,12 @@ const Dialogue = () => {
       keyboardDidHideListener.remove();
     };
   }, []);
+
+  useEffect(() => {
+    console.log(emojiList);
+
+    emojiList[0] && setValue(value + emojiList[0]);
+  }, [emojiList]);
 
   const wait = () => {
     return new Promise(resolve => {
@@ -216,14 +225,14 @@ const Dialogue = () => {
     wait().then(() => setRefreshing(false));
   }, []);
 
-  function scrollToBottom( animated?: boolean) {
+  function scrollToBottom(animated?: boolean) {
     // if (e.stopPropagation && FlashLists.current) {
 
     // }
 
     setTimeout(() => {
       FlashLists.current?.scrollToEnd({ animated });
-    },200);
+    }, 200);
   }
 
   // const useWatchWs = () => {
@@ -252,11 +261,6 @@ const Dialogue = () => {
       timeStamp: now,
     };
 
-    const dd = {
-      type:'',
-      msg:content
-    }
-
     try {
       await useAddSingleChatContent(content);
       setChatData([...chatData, content]);
@@ -278,8 +282,11 @@ const Dialogue = () => {
   };
 
   const handleOpenExpression = () => {
-    setOpenMore(!openMore);
-    Keyboard.dismiss();
+    ActionSheets.current?.show()
+  };
+
+  const handlePick = ({ emoji }: EmojiType) => {
+    setEmojiList([emoji]);
   };
 
   return (
@@ -319,6 +326,7 @@ const Dialogue = () => {
             keyExtractor={item => String(item.timeStamp)}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={119}
+            keyboardDismissMode={"on-drag"}
             initialScrollIndex={chatData.length > 11 ? 11 : 0}
             refreshControl={
               <RefreshControl
@@ -335,7 +343,7 @@ const Dialogue = () => {
         <View
           style={{
             ...styles.toolbar,
-            height: openMore ? 300 : 75,
+            height: 70,
             backgroundColor,
           }}
         >
@@ -351,25 +359,32 @@ const Dialogue = () => {
             </TouchableOpacity>
 
             <TextInput
-              style={{ ...styles.toolbarTextInput, backgroundColor: threeLevelBack }}
+              style={{
+                ...styles.toolbarTextInput,
+                backgroundColor: threeLevelBack,
+                color,
+              }}
               onChangeText={text => onChangeText(text)}
               value={value}
-              multiline={false}
               cursorColor={backgroundColor}
               returnKeyType={"send"}
               clearButtonMode={"while-editing"}
               selectTextOnFocus={true}
               enablesReturnKeyAutomatically={true}
               onSubmitEditing={handleSendChatContent}
+              placeholderTextColor={"#fff"}
+              multiline={true}
+              textAlignVertical='auto'
+              maxLength={300}
             />
             <AntDesign
               name='smileo'
-              onPress={handleOpenExpression}
+              onPress={() => setIsOpen(true)}
               style={{ marginHorizontal: 10 }}
               size={29}
               color={color}
             />
-            <AntDesign onPress={usePickImage} name='pluscircleo' size={29} color={color} />
+            <AntDesign onPress={handleOpenExpression} name='pluscircleo' size={29} color={color} />
           </View>
         </View>
 
@@ -377,12 +392,22 @@ const Dialogue = () => {
           ref={ActionSheets}
           useBottomSafeAreaPadding
           containerStyle={{
-            height: "50%",
-            backgroundColor: threeLevelBack,
-          }}
+            height: "40%",
+            backgroundColor:secondaryBack,
+          }} 
+          statusBarTranslucent
         >
-          <Text>111111111</Text>
+          <More />
         </ActionSheet>
+
+        <EmojiPicker
+          onEmojiSelected={handlePick}
+          open={isOpen}
+          onClose={() => setIsOpen(false)}
+          theme={ColorScheme === "dark" ? Colors.emojiDark : undefined}
+          allowMultipleSelections
+          enableCategoryChangeAnimation={false}
+        />
       </KeyboardAvoidingView>
       {/* </KeyboardAvoidingView> */}
     </View>
@@ -410,6 +435,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
+    fontSize:17
   },
   toolbarAudio: {
     borderRadius: 999,

@@ -11,8 +11,10 @@ export type RootTabParamList = {
 };
 
 export type RootStackParamList = {
+  Login:undefined;
   Home: undefined;
   Mine: undefined;
+  Camera:undefined;
   NotFound: undefined;
   Dialogue: undefined;
 };

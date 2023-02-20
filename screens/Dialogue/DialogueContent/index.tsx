@@ -88,7 +88,7 @@ const DialogueContents = (props: SingleChatType) => {
           }}
         >
           <View style={verificationSender() ? styles.triangleLeft : styles.triangleRight}></View>
-          {(type === "text" && <Text numberOfLines={20}>{content}</Text>) ||
+          {(type === "text" && <Text style={{fontSize:16}} numberOfLines={20}>{content}</Text>) ||
             (type === "img" && (
               <ImageAout
                 source={{

@@ -13,6 +13,12 @@ const linking: LinkingOptions<RootStackParamList> = {
   prefixes: [Linking.createURL("/")],
   config: {
     screens: {
+      Login: {
+        //设置子页面路由
+        screens: {
+          LoginScreen: "login",
+        },
+      },
       Home: {
         //设置子页面路由
         screens: {
@@ -29,6 +35,12 @@ const linking: LinkingOptions<RootStackParamList> = {
         //设置子页面路由
         screens: {
           MineScreen: "mine",
+        },
+      },
+      Camera: {
+        //设置子页面路由
+        screens: {
+          CameraScreen: "camera",
         },
       },
       NotFound: "*",

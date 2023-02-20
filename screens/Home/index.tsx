@@ -12,7 +12,7 @@ const Homes = () => {
 
   return (
     <View style={styles.HomeMain}>
-      <Text style={styles.textMain} onPress={ () => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)}>
+      <Text style={styles.textMain} onPress={ () => Navigation('Dialogue')}>
         Home111
       </Text>
     </View>
