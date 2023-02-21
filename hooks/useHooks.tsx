@@ -3,17 +3,19 @@ import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import Colors from "../constants/Colors";
 import * as SQLite from "expo-sqlite";
-import { QueryDemandType, SingleChatType } from "../types";
+import { QueryDemandType, SingleChatType, userDataInfoType } from "../types";
+import { useGetStoreObject } from "./useStorage";
 
-const userId = "JDVO7z94uUDeVsLctotJu11";
-const friendsId = "kYSIrafylwHX8iV11";
+let SQLiteDb: SQLite.WebSQLDatabase;
 
-const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${userId}.db`, "1.0.1");
-// const [SQLiteDb] = useRecoilState(SQLites)
+useGetStoreObject("userInfo").then(({ id }: userDataInfoType | any) => {
+  SQLiteDb = SQLite.openDatabase(`${id}.db`, "1.0.1");
+});
+
 // 配色方案
 // useColorScheme值总是浅色或深色的，但是内置的
 // type表示它可以为空。这在实践中是不会发生的，所以
-//使它更容易使用。
+// 使它更容易使用。
 export function useColorScheme(): NonNullable<ColorSchemeName> {
   return _useColorScheme() as NonNullable<ColorSchemeName>;
 }
@@ -56,9 +58,7 @@ export const usePickImage = async () => {
 };
 
 export const useCamera = async () => {
-  return await Promise.all([
-    
-  ]);
+  return await Promise.all([]);
 };
 
 /**
@@ -122,14 +122,13 @@ export function useByteToString(Byte: Iterable<number>) {
 /**
  * 创建单聊对话表
  */
-export function useCreateSingleChatContent() {
-  // const [SQLiteDb] = useRecoilState(SQLites)
+export async function useCreateSingleChatContent(friendsId:string) {
 
   return new Promise((resolve, reject) => {
     SQLiteDb.transaction(
       Db => {
         Db.executeSql(
-          `CREATE TABLE IF NOT EXISTS u_chat_content (
+          `CREATE TABLE IF NOT EXISTS u_chat_${friendsId} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         senderId TEXT NOT NULL,
         recipient TEXT NOT NULL,
@@ -139,7 +138,9 @@ export function useCreateSingleChatContent() {
         );
       },
       error => reject(error),
-      () => resolve(true)
+      () => {
+        resolve(true);
+      }
     );
   });
 }
@@ -147,9 +148,10 @@ export function useCreateSingleChatContent() {
 /**
  * 创建好友信息列表
  */
-export function useCreateFriendsInfoList() {
-  // const SQLiteDb = useCreateSql();
-  // const [SQLiteDb] = useRecoilState(SQLites)
+export async function useCreateFriendsInfoList() {
+  // const { id } = (await useGetStoreObject("userInfo")) as unknown as userDataInfoType;
+
+  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${id}.db`, "1.0.1");
   return new Promise((resolve, reject) => {
     SQLiteDb.transaction(
       Db => {
@@ -163,7 +165,9 @@ export function useCreateFriendsInfoList() {
         );
       },
       error => reject(error),
-      () => resolve(true)
+      () => {
+        resolve(true);
+      }
     );
   });
 }
@@ -173,18 +177,19 @@ export function useCreateFriendsInfoList() {
  */
 export function useAddSingleChatContent(parameter: SingleChatType) {
   const { senderId, recipient, type, content, timeStamp } = parameter;
-  // const SQLiteDb = useCreateSql();
-  // const [SQLiteDb] = useRecoilState(SQLites)
+
   return new Promise((resolve, reject) => {
     SQLiteDb.transaction(
       Db => {
         Db.executeSql(
-          "INSERT INTO u_chat_content (senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?)",
+          `INSERT INTO u_chat_${recipient} (senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?)`,
           [senderId, recipient, type, content, timeStamp]
         );
       },
       error => reject(error),
-      () => resolve(true)
+      () => {
+        resolve(true);
+      }
     );
   });
 }
@@ -193,14 +198,14 @@ export function useAddSingleChatContent(parameter: SingleChatType) {
  * 查询单聊记录
  */
 export function useQueryDemand(parameter: QueryDemandType, limit: number) {
-  // const SQLiteDb = useCreateSql();
-  // const [SQLiteDb] = useRecoilState(SQLites)
   const { surface, senderId, recipient } = parameter;
+  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${recipient}.db`, "1.0.1");
+
   return new Promise((resolve, reject) => {
     SQLiteDb.exec(
       [
         {
-          sql: `SELECT * FROM ${surface}
+          sql: `SELECT * FROM  u_chat_${recipient}
           WHERE (senderId = ? AND recipient= ?) OR (senderId= ? AND recipient=?)
           ORDER BY timeStamp DESC
           LIMIT ${limit} `,
@@ -217,11 +222,10 @@ export function useQueryDemand(parameter: QueryDemandType, limit: number) {
 }
 
 /**
- * 删除数据库
+ * 删除单个好友数据库
  */
 export async function useDeleteSQL() {
-  // const [SQLiteDb] = useRecoilState(SQLites)
-  // const SQLiteDb = useCreateSql();
+  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${friendsId}.db`, "1.0.1");
   SQLiteDb.closeAsync();
   return await SQLiteDb.deleteAsync();
 }

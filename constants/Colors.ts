@@ -19,6 +19,7 @@ export default {
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
+    line:"#f6f6f6"
   },
   dark: {
     text: "#fff",
@@ -28,6 +29,7 @@ export default {
     tint: tintColorDark,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
+    line:"#242424"
   },
   emojiDark: {
     backdrop: "#16161888",

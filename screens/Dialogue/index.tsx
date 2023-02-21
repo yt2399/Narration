@@ -20,20 +20,19 @@ import {
   useQueryDemand,
   useThemeColor,
   useWindow,
-  usePickImage,
   useColorScheme,
 } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { SingleChatType } from "../../types";
 import { useRecoilState } from "recoil";
-import { userId } from "../../hooks/Atoms";
+import { userData, webSocketState } from "../../hooks/Atoms";
 import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
 import EmojiPicker from "rn-emoji-keyboard";
 import { EmojiType } from "rn-emoji-keyboard/lib/typescript/src/types";
 import More from "./More";
 
-// import { webSocket } from "../../hooks/webSocket";
+// import { webSockets } from "../../hooks/webSocket";
 
 const DATA = [
   {
@@ -152,7 +151,8 @@ const Dialogue = () => {
   const color = useThemeColor("text");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [emojiList, setEmojiList] = useState<Array<string>>([]);
-  const [userIds] = useRecoilState(userId);
+  const [userDataInfo] = useRecoilState(userData);
+  const [webSocketStates] = useRecoilState(webSocketState)
   const onChangeText = (text: string) => {
     setValue(text);
   };
@@ -164,15 +164,14 @@ const Dialogue = () => {
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", onKeyboardDidHide);
 
     //监听webSocket连接成功
+    if(webSocketStates.isReady){
+      webSocketStates.socket?.send('测试发送')
+    }
+    
 
-    // webSocket.addEventListener('message', function (e) {
-
-    //   console.log(e.data,'页面二');
-
-    // });
-
+   
     //进入聊天窗口获取12条最新数据
-    useCreateSingleChatContent()
+    useCreateSingleChatContent(friendsId)
       .catch(err => {
         console.log(err);
       })
@@ -191,18 +190,18 @@ const Dialogue = () => {
   }, []);
 
   useEffect(() => {
-    console.log(emojiList);
-
     emojiList[0] && setValue(value + emojiList[0]);
   }, [emojiList]);
 
   const wait = () => {
+    console.log(userDataInfo);
+    
     return new Promise(resolve => {
       limit += 12;
       useQueryDemand(
         {
           surface: "u_chat_content",
-          senderId: userIds,
+          senderId: userDataInfo.id,
           recipient: friendsId,
         },
         limit
@@ -226,35 +225,15 @@ const Dialogue = () => {
   }, []);
 
   function scrollToBottom(animated?: boolean) {
-    // if (e.stopPropagation && FlashLists.current) {
-
-    // }
-
     setTimeout(() => {
-      FlashLists.current?.scrollToEnd({ animated });
+      chatData.length && FlashLists.current?.scrollToEnd({ animated });
     }, 200);
   }
-
-  // const useWatchWs = () => {
-  //   // 监听 WebSocket 事件
-  //   webSocket.onopen = () => {
-  //     console.log("WebSocket 连接已建立");
-  //   };
-  //   webSockets.onmessage = event => {
-  //     console.log("收到消息：", event.data);
-  //   };
-  //   webSockets.onerror = error => {
-  //     console.log("WebSocket 错误：", error);
-  //   };
-  //   // socket.onclose = () => {
-  //   //   console.log('WebSocket 连接已关闭');
-  //   // };
-  // };
 
   const handleSendChatContent = async () => {
     const now = Math.floor(new Date().getTime() / 1000);
     const content: SingleChatType = {
-      senderId: userIds,
+      senderId: userDataInfo.id,
       recipient: friendsId,
       type: "text",
       content: value,
@@ -282,7 +261,7 @@ const Dialogue = () => {
   };
 
   const handleOpenExpression = () => {
-    ActionSheets.current?.show()
+    ActionSheets.current?.show();
   };
 
   const handlePick = ({ emoji }: EmojiType) => {
@@ -393,8 +372,8 @@ const Dialogue = () => {
           useBottomSafeAreaPadding
           containerStyle={{
             height: "40%",
-            backgroundColor:secondaryBack,
-          }} 
+            backgroundColor: secondaryBack,
+          }}
           statusBarTranslucent
         >
           <More />
@@ -435,7 +414,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 5,
-    fontSize:17
+    fontSize: 17,
   },
   toolbarAudio: {
     borderRadius: 999,

@@ -1,6 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-// import { useGetStoreString } from "../hooks/useStorage";
-// axios.defaults.baseURL = "https://m.only.cn/"; // 基路径
+import { useGetStoreString } from "../hooks/useStorage";
+// axios.defaults.baseURL = "http://192.168.1.174:8081"; // 基路径
 
 axios.create({
   timeout: 10000, //超时配置
@@ -24,13 +24,13 @@ function showFail(msg = "失败") {
 // Interceptors 拦截器
 // 添加一个请求发送之前的拦截器
 axios.interceptors.request.use(
-  // async (config: AxiosRequestConfig) => {
-  //   const token = await useGetStoreString("token");
-  //   token && (axios.defaults.headers.common["tokens"] = token);
+  async config => {
+    const token = await useGetStoreString("userInfo");
+    token && (axios.defaults.headers.common["tokens"] = JSON.parse(token).token);
 
-  //   showLoading();
-  //   return config;
-  // },
+    showLoading();
+    return config;
+  },
   function (error) {
     // 请求发送失败
     showFail("请求失败");
@@ -57,7 +57,7 @@ axios.interceptors.response.use(
 
 // 增删改查  Promise
 // get
-export function get(url: string = '', params: Object = {}, headers: any = {}) {
+export function get(url: string , params?: object, headers?: object) {
   return new Promise<any>((resolve, reject) => {
     axios({
       url,
@@ -65,16 +65,16 @@ export function get(url: string = '', params: Object = {}, headers: any = {}) {
       params,
       headers,
     })
-      .then((result) => {
+      .then(result => {
         resolve(result.data); // axios 里面的 data 数据解析
       })
-      .catch((err) => {
+      .catch(err => {
         reject(err);
       });
   });
 }
 // post
-export function post(url: string, data: any, params: Object, headers: any) {
+export function post(url: string, data: any, params?: object, headers?: object) {
   return new Promise<any>(function (resolve, reject) {
     axios({
       url,
@@ -83,10 +83,10 @@ export function post(url: string, data: any, params: Object, headers: any) {
       headers: headers || { "Content-Type": "application/json" },
       data, // POST 请求提交的数据
     })
-      .then((result) => {
+      .then(result => {
         resolve(result.data); // axios 里面的 data 数据解析
       })
-      .catch((err) => {
+      .catch(err => {
         reject(err);
       });
   });

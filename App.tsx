@@ -1,23 +1,18 @@
-import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-status-bar";
-import { Platform, StyleSheet } from "react-native";
+import { StatusBar } from "expo-status-bar";
+import { StyleSheet } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import {
-  useColorScheme,
-  useCreateSingleChatContent,
-  useDeleteSQL,
-  useThemeColor,
-} from "./hooks/useHooks";
+import { useColorScheme, useThemeColor } from "./hooks/useHooks";
 import Navigation from "./navigation";
 import { useFonts } from "expo-font";
 import React, { useEffect } from "react";
 import { RecoilRoot } from "recoil";
-import { MonitorWebSocket } from "./hooks/webSocket";
 import { ToastProvider } from "react-native-toast-notifications";
+
 export default function App() {
   const colorScheme = useColorScheme();
   const backgroundColor = useThemeColor("background");
   useEffect(() => {
-    MonitorWebSocket();
+    
     //创建数据库
     // useDeleteSQL().then(()=>{
     //   console.log(111);
@@ -35,9 +30,6 @@ export default function App() {
   if (!fontsLoaded) {
     return null;
   }
-  // if (Platform.OS === 'ios') {
-  //   setStatusBarStyle('auto')
-  // }
 
   return (
     <RecoilRoot>
