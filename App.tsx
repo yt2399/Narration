@@ -1,18 +1,30 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+
 import { useColorScheme, useThemeColor } from "./hooks/useHooks";
-import Navigation from "./navigation";
 import { useFonts } from "expo-font";
-import React, { useEffect } from "react";
-import { RecoilRoot } from "recoil";
-import { ToastProvider } from "react-native-toast-notifications";
+import React, { useContext, useEffect, } from "react";
+
+import AppWrapper from "./AppWrapper";
+import { Provider } from "mobx-react";
+import webSocketStore from "./hooks/WebSocketStore";
+import store from "./hooks/store";
+
 
 export default function App() {
   const colorScheme = useColorScheme();
   const backgroundColor = useThemeColor("background");
+
   useEffect(() => {
+
+    webSocketStore.connect();
     
+    // setUserData({
+
+    //     token: "111222",
+    //     nickname: "33311",
+    //     avatar: "222211",
+    //     id: "333311",
+
+    // })
     //创建数据库
     // useDeleteSQL().then(()=>{
     //   console.log(111);
@@ -32,24 +44,9 @@ export default function App() {
   }
 
   return (
-    <RecoilRoot>
-      <SafeAreaProvider style={{ flex: 1, backgroundColor }}>
-        {/* 黑夜模式 */}
-        <StatusBar style={"auto"} backgroundColor={backgroundColor} animated={true} />
-        <ToastProvider>
-          <Navigation colorScheme={colorScheme} />
-        </ToastProvider>
-        {/* {state.isActivityIndicator && <Loading />} */}
-      </SafeAreaProvider>
-    </RecoilRoot>
+    <Provider webSocketStore={webSocketStore} store={store} >
+      <AppWrapper />
+    </Provider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

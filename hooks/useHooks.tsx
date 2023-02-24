@@ -5,7 +5,7 @@ import Colors from "../constants/Colors";
 import * as SQLite from "expo-sqlite";
 import { QueryDemandType, SingleChatType, userDataInfoType } from "../types";
 import { useGetStoreObject } from "./useStorage";
-
+import * as Haptics from "expo-haptics";
 let SQLiteDb: SQLite.WebSQLDatabase;
 
 useGetStoreObject("userInfo").then(({ id }: userDataInfoType | any) => {
@@ -229,3 +229,19 @@ export async function useDeleteSQL() {
   SQLiteDb.closeAsync();
   return await SQLiteDb.deleteAsync();
 }
+
+
+
+
+//手机振动提示
+export const Tips = () => {
+  let count = 0;
+  let impactAsync = setInterval(() => {
+    count++;
+    if (count >= 10) {
+      clearInterval(impactAsync);
+      return;
+    }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+  }, 100);
+};

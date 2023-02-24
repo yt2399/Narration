@@ -2,8 +2,9 @@
 
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
+import { ProviderProps } from '../../types'
 
-const Mine = () => {
+const Mine = ({ webSocketStore, store }:ProviderProps) => {
   return (
     <View>
       <Text>Mine</Text>

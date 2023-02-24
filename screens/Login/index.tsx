@@ -6,16 +6,20 @@ import * as Device from "expo-device";
 
 import { useToast } from "react-native-toast-notifications";
 import { useNavigation } from "@react-navigation/native";
-import { useGetStoreObject, useRemoveStore, useStoreObject } from "../../hooks/useStorage";
-import { useRecoilState } from "recoil";
-import { userData } from "../../hooks/Atoms";
+import { useStoreObject } from "../../hooks/useStorage";
+import { ProviderProps } from "../../types";
 
-const Login = () => {
+
+const Login = ({ webSocketStore, store }:ProviderProps) => {
   const [account, setAccount] = useState("");
   const [pwd, setPwd] = useState("");
   const navigate = useNavigation().navigate;
-  const [, setUserDataInfo] = useRecoilState(userData);
+
+
   const toast = useToast();
+
+  //引入websocket状态
+
   const onChangeAccount = (value: string) => {
     setAccount(value);
   };
@@ -24,7 +28,7 @@ const Login = () => {
   };
 
   useEffect(() => {
-    
+
 
     // useRemoveStore('userInfo')
   }, []);
@@ -40,14 +44,17 @@ const Login = () => {
         deviceNo,
       });
       if (code === 200) {
-        setUserDataInfo(data);
         await useStoreObject("userInfo", data);
+        webSocketStore.connect()
+        store.setUser(data)
         toast.show("登录成功");
         setTimeout(() => {
           navigate("Home");
-        }, 100);
+        }, 200)
+
+
       }
-    } catch (error:any) {
+    } catch (error: any) {
       console.log(error);
 
       toast.show("登录错误，参考报错");

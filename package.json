@@ -28,6 +28,8 @@
     "expo-sqlite": "~11.0.0",
     "expo-status-bar": "~1.4.2",
     "expo-video-thumbnails": "~7.0.0",
+    "mobx": "^6.8.0",
+    "mobx-react": "^7.6.0",
     "react": "18.1.0",
     "react-dom": "18.1.0",
     "react-native": "0.70.5",
@@ -42,7 +44,6 @@
     "react-native-swipe-list-view": "^3.2.9",
     "react-native-toast-notifications": "^3.3.1",
     "react-native-web": "~0.18.9",
-    "recoil": "^0.7.6",
     "rn-emoji-keyboard": "^1.2.1"
   },
   "devDependencies": {

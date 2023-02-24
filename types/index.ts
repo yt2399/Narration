@@ -1,10 +1,20 @@
 import { NavigatorScreenParams } from "@react-navigation/native";
+import { StoreType } from "../hooks/store";
+import { WebSocketStore } from "../hooks/WebSocketStore";
 
 declare global {
   namespace ReactNavigation {
     interface RootParamList extends RootStackParamList {}
   }
 }
+
+export type UserInfo = {
+  avatar: string
+  id: string
+  nickname: string
+  token: string
+};
+
 
 export type RootTabParamList = {
   Home: undefined;
@@ -53,3 +63,15 @@ export interface userDataInfoType {
   avatar: string;
   id: string;
 }
+
+export type ProviderProps = {
+  webSocketStore: WebSocketStore;
+  store: {
+    setUser: (Info: StoreType | null) => void;
+    setCurrentEntrance: (Entrance: number) => void;
+    setCurrentFriends: (Friends: string) => void;
+    userInfo: StoreType;
+    currentEntrance: number;
+    currentFriends: string;
+  };
+};

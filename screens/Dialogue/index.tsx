@@ -16,16 +16,13 @@ import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
 import {
   useAddSingleChatContent,
-  useCreateSingleChatContent,
   useQueryDemand,
   useThemeColor,
   useWindow,
   useColorScheme,
 } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { SingleChatType } from "../../types";
-import { useRecoilState } from "recoil";
-import { userData, webSocketState } from "../../hooks/Atoms";
+import { ProviderProps, SingleChatType } from "../../types";
 import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
 import EmojiPicker from "rn-emoji-keyboard";
@@ -131,7 +128,7 @@ const DATA = [
 
 const friendsId = "kYSIrafylwHX8iV11";
 const Height = useWindow("Height");
-const Dialogue = () => {
+const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
   let limit = 0;
   const [value, setValue] = useState("");
   const [chatData, setChatData] = useState<SingleChatType[] | []>([]);
@@ -151,8 +148,7 @@ const Dialogue = () => {
   const color = useThemeColor("text");
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [emojiList, setEmojiList] = useState<Array<string>>([]);
-  const [userDataInfo] = useRecoilState(userData);
-  const [webSocketStates] = useRecoilState(webSocketState)
+
   const onChangeText = (text: string) => {
     setValue(text);
   };
@@ -163,25 +159,20 @@ const Dialogue = () => {
     //监听键盘隐藏
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", onKeyboardDidHide);
 
-    //监听webSocket连接成功
-    if(webSocketStates.isReady){
-      webSocketStates.socket?.send('测试发送')
-    }
-    
 
    
     //进入聊天窗口获取12条最新数据
-    useCreateSingleChatContent(friendsId)
-      .catch(err => {
-        console.log(err);
-      })
-      .then(async () => {
-        try {
-          await wait();
-        } catch (error) {
-          console.log(error);
-        }
-      });
+    // useCreateSingleChatContent(friendsId)
+    //   .catch(err => {
+    //     console.log(err);
+    //   })
+    //   .then(async () => {
+    //     try {
+    //       await wait();
+    //     } catch (error) {
+    //       console.log(error);
+    //     }
+    //   });
 
     return () => {
       keyboardDidShowListener.remove();
@@ -194,14 +185,14 @@ const Dialogue = () => {
   }, [emojiList]);
 
   const wait = () => {
-    console.log(userDataInfo);
+
     
     return new Promise(resolve => {
       limit += 12;
       useQueryDemand(
         {
           surface: "u_chat_content",
-          senderId: userDataInfo.id,
+          senderId: '',
           recipient: friendsId,
         },
         limit
@@ -233,7 +224,7 @@ const Dialogue = () => {
   const handleSendChatContent = async () => {
     const now = Math.floor(new Date().getTime() / 1000);
     const content: SingleChatType = {
-      senderId: userDataInfo.id,
+      senderId: '',
       recipient: friendsId,
       type: "text",
       content: value,

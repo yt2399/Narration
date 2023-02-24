@@ -1,5 +1,5 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useLayoutEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AntDesign } from "@expo/vector-icons";
@@ -7,53 +7,57 @@ import { styleAll } from "../../style";
 import { useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { SwipeListView } from "react-native-swipe-list-view";
-import { MonitorWebSocket, useWebSocket, useWebSocketMessages } from "../../hooks/webSocket";
-import { useRecoilState } from "recoil";
-import {  userData } from "../../hooks/Atoms";
-import { useGetStoreObject, useRemoveStore } from "../../hooks/useStorage";
+
+import { useGetStoreObject } from "../../hooks/useStorage";
 import { useToast } from "react-native-toast-notifications";
-// import { webSockets } from "../../hooks/webSocket";
-const Homes = () => {
+import { WebSocketStore } from "../../hooks/WebSocketStore";
+import { inject, observer } from "mobx-react";
+import { StoreType } from "../../hooks/store";
+import { ProviderProps } from "../../types";
+
+
+
+
+const Homes = ({ webSocketStore, store }:ProviderProps ) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
 
   const color = useThemeColor("text");
-  const [, setUserDataInfo] = useRecoilState(userData);
-  const navigate = useNavigation().navigate;
-  const toast = useToast();
 
-  //引入websocket状态
-  const { connect, send } = useWebSocket();
-  const messages = useWebSocketMessages();
+  const navigation = useNavigation()
+  const toast = useToast()
 
-  useLayoutEffect(() => {
-    connect("ws://192.168.1.174:9999");
-  }, []);
+
 
   const handleClick = () => {
-      send("Hello, WebSocket!");
-    };
+    // send("Hello, WebSocket!");
+  };
+
+  // useEffect(()=>{
+  //   console.log(webSocketStates,'监听后');
+
+  // },[webSocketStates])
+
   useEffect(() => {
-    
-    useGetStoreObject("userInfo")
-      .then((res: any) => {
-        setUserDataInfo(res);
-        //  new webSocket(res.token)
+    const unsubscribe = navigation.addListener('focus', async () => {
 
-        toast.show(`欢迎回来 , ${res.nickname}`);
-      })
-      .catch(() => {
-        navigate("Login");
-      });
+      
 
-    // .catch(() => {
-    //   console.log(userInfo.token);
+      console.log(webSocketStore);
+      console.log(store);
+      
 
-    //   navigate("Login");
-    // });
+      if (!store.userInfo) {
+        navigation.navigate('Login')
+      }
 
+    });
     // useRemoveStore('userInfo')
+    return unsubscribe;
+    // connect('ws://192.168.1.174:9999')
+    //获取失败直接退出登陆
+
     // useQueryDemand(
     //   {
     //     surface: "u_chat_content",
@@ -68,8 +72,19 @@ const Homes = () => {
     //   .catch(res => {
     //     console.log(res);
     //   });
-  }, []);
+  }, [navigation]);
 
+
+  const useGetStoreObjects = async () => {
+    try {
+      const res = await useGetStoreObject("userInfo") as any
+
+    } catch (error) {
+
+    }
+
+
+  }
 
   const [listData, setListData] = useState(
     Array(20)
@@ -97,7 +112,7 @@ const Homes = () => {
   };
 
   const renderItem = (data: { item: { text: any } }) => (
-    <TouchableHighlight onPress={() => navigate('Dialogue')} style={styles.rowFront}>
+    <TouchableHighlight onPress={() => navigation.navigate('Dialogue')} style={styles.rowFront}>
       <FriendsItem />
     </TouchableHighlight>
   );
@@ -145,7 +160,7 @@ const Homes = () => {
   );
 };
 
-export default Homes;
+export default Homes
 
 const styles = StyleSheet.create({
   HomeMain: {
