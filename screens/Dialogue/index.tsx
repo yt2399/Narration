@@ -14,22 +14,22 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
-import {
-  useAddSingleChatContent,
-  useQueryDemand,
-  useThemeColor,
-  useWindow,
-  useColorScheme,
-} from "../../hooks/useHooks";
+import { useThemeColor, useWindow, useColorScheme } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { ProviderProps, SingleChatType } from "../../types";
+import { DIALOGUE_ENTRANCE, FriendsItemProps, ProviderProps, SingleChatType } from "../../types";
 import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
 import EmojiPicker from "rn-emoji-keyboard";
 import { EmojiType } from "rn-emoji-keyboard/lib/typescript/src/types";
 import More from "./More";
-
-// import { webSockets } from "../../hooks/webSocket";
+import { useRoute } from "@react-navigation/native";
+import { messageContentType } from "../../hooks/WebSocketStore";
+import {
+  useAddSingleChatContent,
+  useCreateSingleChatContent,
+  useQueryDemand,
+} from "../../hooks/useSQLite";
+import { useToast } from "react-native-toast-notifications";
 
 const DATA = [
   {
@@ -126,55 +126,83 @@ const DATA = [
   },
 ];
 
-const friendsId = "kYSIrafylwHX8iV11";
+type paramsType = {
+  friendInfo: FriendsItemProps;
+};
+
 const Height = useWindow("Height");
-const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
+const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   let limit = 0;
+
   const [value, setValue] = useState("");
+
   const [chatData, setChatData] = useState<SingleChatType[] | []>([]);
+
   const [refreshing, setRefreshing] = useState(false);
+
   const [isRefreshControl, setIsRefreshControl] = useState(true);
+
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+
   const [openMore, setOpenMore] = useState(false);
+
   const FlashLists = useRef<FlashList<SingleChatType>>(null);
+
   //true:文本输入模式
   //false:语音输入
   const [mode, setMode] = useState(true);
+
   const ColorScheme = useColorScheme();
+
+  const router = useRoute();
+
   const ActionSheets = useRef<ActionSheetRef>(null);
+
   const backgroundColor = useThemeColor("background");
+
   const secondaryBack = useThemeColor("secondaryBack");
+
   const threeLevelBack = useThemeColor("threeLevelBack");
+
   const color = useThemeColor("text");
+
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
   const [emojiList, setEmojiList] = useState<Array<string>>([]);
+
+  const { friendInfo } = router.params as paramsType;
+
+  const toast = useToast();
 
   const onChangeText = (text: string) => {
     setValue(text);
   };
 
   useEffect(() => {
+    store.setCurrentEntrance(DIALOGUE_ENTRANCE);
     //监听键盘拉起
     const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", onKeyboardDidShow);
     //监听键盘隐藏
     const keyboardDidHideListener = Keyboard.addListener("keyboardDidHide", onKeyboardDidHide);
 
+    //创建单聊对话表
+    if (Sqlite.SqliteState.Sqlite) {
+      useCreateSingleChatContent(Sqlite.SqliteState.Sqlite, friendInfo.id);
 
-   
+      useQueryDemand(Sqlite.SqliteState.Sqlite, friendInfo.id, 10).then(async () => {
+        try {
+          await wait();
+        } catch (error) {
+          console.log(error);
+        }
+      });
+    }
+
+    webSocketStore.socketState.socket?.addEventListener("message", watchMsg);
     //进入聊天窗口获取12条最新数据
-    // useCreateSingleChatContent(friendsId)
-    //   .catch(err => {
-    //     console.log(err);
-    //   })
-    //   .then(async () => {
-    //     try {
-    //       await wait();
-    //     } catch (error) {
-    //       console.log(error);
-    //     }
-    //   });
 
     return () => {
+      webSocketStore.socketState.socket?.removeEventListener("message", watchMsg);
       keyboardDidShowListener.remove();
       keyboardDidHideListener.remove();
     };
@@ -184,28 +212,46 @@ const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
     emojiList[0] && setValue(value + emojiList[0]);
   }, [emojiList]);
 
-  const wait = () => {
+  const watchMsg = (e: MessageEvent<any>) => {
+    const { data } = e;
+    console.log(data, "聊天窗口");
 
-    
+    if (data === "PONG") return;
+
+    const messageContent = JSON.parse(data) as messageContentType;
+
+    if (messageContent.event === 201) {
+      const content: SingleChatType = {
+        isSender: 0,
+        userId: store.userInfo?.id || "",
+        ...messageContent.data,
+      };
+      console.log(content);
+      
+      setChatData([...chatData, content]);
+      scrollToBottom(true);
+      console.log(Sqlite.SqliteState.Sqlite);
+      
+      Sqlite.SqliteState.Sqlite && useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content);
+    }
+  };
+
+  const wait = () => {
+    const friendsId = friendInfo.id;
     return new Promise(resolve => {
-      limit += 12;
-      useQueryDemand(
-        {
-          surface: "u_chat_content",
-          senderId: '',
-          recipient: friendsId,
-        },
-        limit
-      ).then((result: any) => {
-        const { rows } = result[0] as { rows: SingleChatType[] };
-        console.log(rows, "查询的符合条件数据");
-        setChatData(rows.reverse());
-        resolve(limit);
-        if (limit > rows.length) {
-          setIsRefreshControl(false);
-          return;
-        }
-      });
+      if (Sqlite.SqliteState.Sqlite) {
+        limit += 12;
+        useQueryDemand(Sqlite.SqliteState.Sqlite, friendsId, limit).then((result: any) => {
+          const { rows } = result[0] as { rows: SingleChatType[] };
+          console.log(rows, "查询的符合条件数据");
+          setChatData(rows.reverse());
+          resolve(limit);
+          if (limit > rows.length) {
+            setIsRefreshControl(false);
+            return;
+          }
+        });
+      }
     });
   };
 
@@ -222,22 +268,39 @@ const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
   }
 
   const handleSendChatContent = async () => {
+    const friendsId = friendInfo.id;
+
     const now = Math.floor(new Date().getTime() / 1000);
     const content: SingleChatType = {
-      senderId: '',
+      isSender: 1,
+      userId: store.userInfo?.id || "",
+      senderId: store.userInfo?.id || "",
       recipient: friendsId,
-      type: "text",
+      type: 1,
       content: value,
       timeStamp: now,
     };
+    console.log(content);
 
     try {
-      await useAddSingleChatContent(content);
-      setChatData([...chatData, content]);
-      setValue("");
-      scrollToBottom(true);
+      if (Sqlite.SqliteState.Sqlite && webSocketStore.socketState.socket) {
+        setChatData([...chatData, content]);
+        setValue("");
+        scrollToBottom(true);
+
+        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content);
+        const sendContent = {
+          event: 201,
+          data: content,
+        };
+        webSocketStore.socketState.socket.send(JSON.stringify(sendContent));
+        return;
+      }
+      toast.show("发送失败  连接服务器错误");
     } catch (error) {
       console.log(error);
+
+      toast.show("未知错误");
     }
   };
 
@@ -260,7 +323,7 @@ const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor }}>
+    <View style={[{ flex: 1, backgroundColor }, styleAll.iosBottom]}>
       <MaterialCommunityIcons
         name='keyboard-settings'
         size={15}
@@ -268,7 +331,7 @@ const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
         style={{ display: "none" }}
       />
 
-      <DialogueHead />
+      <DialogueHead {...friendInfo} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? (chatData.length > 7 ? "position" : "height") : undefined}
         style={{ flex: 1 }}
@@ -293,11 +356,12 @@ const Dialogue = ({ webSocketStore, store }:ProviderProps) => {
           <FlashList
             data={chatData}
             renderItem={({ item }) => <DialogueContents {...item} />}
-            keyExtractor={item => String(item.timeStamp)}
+            keyExtractor={(item,index) => String(item.timeStamp) + index}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={119}
             keyboardDismissMode={"on-drag"}
             initialScrollIndex={chatData.length > 11 ? 11 : 0}
+           
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}

@@ -6,153 +6,153 @@ import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import { useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
-import { SwipeListView } from "react-native-swipe-list-view";
-
-import { useGetStoreObject } from "../../hooks/useStorage";
+import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
-import { WebSocketStore } from "../../hooks/WebSocketStore";
-import { inject, observer } from "mobx-react";
-import { StoreType } from "../../hooks/store";
-import { ProviderProps } from "../../types";
+import { FriendsItemProps, HOME_ENTRANCE, ProviderProps } from "../../types";
+import { useCreateFriendsInfoList, useDeleteSQL } from "../../hooks/useSQLite";
+import * as SQLite from "expo-sqlite";
+import { messageContentType } from "../../hooks/WebSocketStore";
 
-
-
-
-const Homes = ({ webSocketStore, store }:ProviderProps ) => {
+const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
 
+  const [userList, setUserList] = useState<FriendsItemProps[]>([]);
+
   const color = useThemeColor("text");
 
-  const navigation = useNavigation()
-  const toast = useToast()
-
-
-
-  const handleClick = () => {
-    // send("Hello, WebSocket!");
-  };
-
-  // useEffect(()=>{
-  //   console.log(webSocketStates,'监听后');
-
-  // },[webSocketStates])
+  const navigation = useNavigation();
+  const toast = useToast();
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-
-      
-
+    const unsubscribe = navigation.addListener("focus", async () => {
       console.log(webSocketStore);
       console.log(store);
-      
+      console.log(Sqlite);
 
-      if (!store.userInfo) {
-        navigation.navigate('Login')
+      store.setCurrentEntrance(HOME_ENTRANCE);
+
+      store.setIsActivityIndicator(true);
+      if (!store?.userInfo?.id) {
+        navigation.navigate("Login");
+        toast.show("验证失效，请重新登陆");
+        return;
+      }
+      const { id } = store.userInfo;
+      //连接sql
+      Sqlite.connect(id);
+      // useDeleteSQL(Sqlite.SqliteState.Sqlite)
+      //获取到Info
+      if (!store.isToken) {
+        //判断是否连接
+        if (webSocketStore.socketState.isReady) {
+          //执行用户信息连接绑定
+          webSocketStore.socketState.socket?.send(
+            // JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
+            JSON.stringify({
+              event: 101,
+              data: {
+                token:
+                  "ODY2YWVkZjVkYjAxNDQwNzk5NmMwYzliYTIzN2IxMjl8aG1RR21WNGl8MTY5MjkwMDQ0MzAwMA==",
+              },
+            })
+          );
+          console.log("发送成功");
+
+          //创建好友基础列表库
+          Sqlite.SqliteState.Sqlite && useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
+
+          webSocketStore.socketState.socket?.addEventListener("message", e => {
+            const { data } = e;
+
+            if (data === "PONG") return;
+
+            const messageContent = JSON.parse(data) as messageContentType;
+
+            if (messageContent.event === 127) {
+              console.log(messageContent, "home");
+              setUserList(messageContent.data.dataList);
+            }
+          });
+        }
       }
 
+      if (webSocketStore.socketState.isReady) {
+        webSocketStore.socketState.socket?.send(
+          JSON.stringify({ event: 199, data: { id, type: 127 } })
+        );
+        console.log("发送获取通讯录");
+      }
     });
-    // useRemoveStore('userInfo')
     return unsubscribe;
-    // connect('ws://192.168.1.174:9999')
-    //获取失败直接退出登陆
-
-    // useQueryDemand(
-    //   {
-    //     surface: "u_chat_content",
-    //     senderId: 1122,
-    //     recipient: 11122,
-    //   },
-    //   20
-    // )
-    //   .then(res => {
-    //     console.log(res);
-    //   })
-    //   .catch(res => {
-    //     console.log(res);
-    //   });
   }, [navigation]);
 
-
-  const useGetStoreObjects = async () => {
+  const useCreateFriendsSql = async (Sqlite: SQLite.WebSQLDatabase) => {
     try {
-      const res = await useGetStoreObject("userInfo") as any
-
+      const result = await useCreateFriendsInfoList(Sqlite);
     } catch (error) {
-
+      toast.show("未知错误，错误代码159");
     }
+  };
 
-
-  }
-
-  const [listData, setListData] = useState(
-    Array(20)
-      .fill("")
-      .map((_, i) => ({ key: `${i}`, text: `item #${i}` }))
-  );
-
-  const closeRow = (rowMap: any, rowKey: any) => {
+  const closeRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
     if (rowMap[rowKey]) {
       rowMap[rowKey].closeRow();
     }
   };
 
-  const deleteRow = (rowMap: any, rowKey: any) => {
+  const deleteRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
     closeRow(rowMap, rowKey);
-    const newData = [...listData];
-    const prevIndex = listData.findIndex(item => item.key === rowKey);
+    const newData = [...userList];
+    const prevIndex = userList.findIndex(item => item.id === rowKey);
     newData.splice(prevIndex, 1);
-    setListData(newData);
+    setUserList(newData);
   };
 
-  const onRowDidOpen = (rowKey: any) => {
-    //执行删除
-    console.log("This row opened", rowKey);
-  };
-
-  const renderItem = (data: { item: { text: any } }) => (
-    <TouchableHighlight onPress={() => navigation.navigate('Dialogue')} style={styles.rowFront}>
-      <FriendsItem />
-    </TouchableHighlight>
-  );
-
-  const renderHiddenItem = (data: any, rowMap: any) => (
-    <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
-      <TouchableOpacity
-        activeOpacity={0.7}
-        style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
-        onPress={() => closeRow(rowMap, data.item.key)}
-      >
-        <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.7}
-        style={[styles.backRightBtn, styles.backRightBtnRight]}
-        onPress={() => deleteRow(rowMap, data.item.key)}
-      >
-        <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
-      </TouchableOpacity>
-    </View>
-  );
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor }}>
-      <View style={[styles.HomeMain, { backgroundColor }]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor, paddingBottom: 0 }}>
+      <View style={[styles.HomeMain, { backgroundColor, paddingBottom: 0 }]}>
         <View style={[styles.head, styleAll.center]}>
           <AntDesign name='search1' size={24} color={color} />
           <AntDesign name='pluscircle' size={24} color={color} />
         </View>
+
         <SwipeListView
+          style={{ flex: 1, backgroundColor: secondaryBack }}
           disableRightSwipe
-          data={listData}
-          renderItem={renderItem}
-          renderHiddenItem={renderHiddenItem}
+          data={userList}
+          renderItem={({ item }: { item: FriendsItemProps }) => (
+            <TouchableHighlight
+              onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
+              style={styles.rowFront}
+            >
+              <FriendsItem {...item} />
+            </TouchableHighlight>
+          )}
+          renderHiddenItem={({ item }, rowMap) => (
+            <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
+                onPress={() => closeRow(rowMap, item.id)}
+              >
+                <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.backRightBtn, styles.backRightBtnRight]}
+                onPress={() => deleteRow(rowMap, item.id)}
+              >
+                <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           leftOpenValue={0}
           rightOpenValue={-150}
           previewRowKey={"0"}
           previewOpenValue={-40}
           previewOpenDelay={2000}
-          onRowDidOpen={onRowDidOpen}
           showsVerticalScrollIndicator={false}
         />
       </View>
@@ -160,7 +160,7 @@ const Homes = ({ webSocketStore, store }:ProviderProps ) => {
   );
 };
 
-export default Homes
+export default Homes;
 
 const styles = StyleSheet.create({
   HomeMain: {
@@ -171,6 +171,14 @@ const styles = StyleSheet.create({
     height: 50,
     justifyContent: "space-between",
     paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 50,
   },
   headTitle: {
     fontFamily: "Inter-Black",

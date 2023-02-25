@@ -115,6 +115,8 @@ export function useByteToString(Byte: Iterable<number>) {
     console.error(error, "转string错误");
   }
 }
+
+
 /**
  * 初始化一个sql库，如果没有就会创建
  */

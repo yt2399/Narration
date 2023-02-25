@@ -2,14 +2,20 @@ import { Image, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { styleAll } from "../../../style";
 import { useThemeColor } from "../../../hooks/useHooks";
+import { FriendsItemProps } from "../../../types";
 
-const FriendsItem = () => {
-  const avatar =
+
+
+const FriendsItem = (data :FriendsItemProps) => {
+
+  const {avatar,id,nickname} = data
+
+  const avatars =
     "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
-  const Line = useThemeColor('line')
+  const Line = useThemeColor("line");
   const color = useThemeColor("text");
   return (
     <View
@@ -22,12 +28,12 @@ const FriendsItem = () => {
       <Image
         style={styles.avatar}
         source={{
-          uri: avatar,
+          uri: avatar || avatars,
         }}
       />
       <View style={styles.ItemInfo}>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>
-          <Text style={[styles.ItemName, { color }]}>测试名称</Text>
+          <Text style={[styles.ItemName, { color }]}>{nickname || '未知用户'}</Text>
           <Text style={styles.lastNews}>五分钟前</Text>
         </View>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>
@@ -45,8 +51,8 @@ const styles = StyleSheet.create({
   ItemMain: {
     width: "100%",
     height: 70,
-    paddingLeft:20,
-    paddingRight:10,
+    paddingLeft: 20,
+    paddingRight: 10,
     borderBottomWidth: 1,
   },
   avatar: {
@@ -71,8 +77,8 @@ const styles = StyleSheet.create({
     color: "#ccc",
   },
   block: {
-    paddingHorizontal:5,
-    borderRadius:4,
-    overflow:"hidden"
+    paddingHorizontal: 5,
+    borderRadius: 4,
+    overflow: "hidden",
   },
 });

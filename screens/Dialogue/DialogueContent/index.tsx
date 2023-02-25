@@ -1,4 +1,4 @@
-import { Image, KeyboardAvoidingView, ListRenderItemInfo, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import { useThemeColor, useThumbnail, useWindow } from "../../../hooks/useHooks";
 import ImageAout from "../../../components/ImageAout";
@@ -6,10 +6,8 @@ import { VideoThumbnailsResult } from "expo-video-thumbnails";
 import { AntDesign } from "@expo/vector-icons";
 import PopupVideo from "../../../components/PopupVideo";
 import ImageView from "react-native-image-viewing";
-import { SingleChatContentType, SingleChatType } from "../../../types";
+import { SingleChatType, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
 const width = useWindow("Width");
-const userId = "JDVO7z94uUDeVsLctotJu11";
-const friendsId = "kYSIrafylwHX8iV11";
 
 const avatar =
   "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -23,7 +21,7 @@ const DialogueContents = (props: SingleChatType) => {
   //   body: { type, content },
   // } = props;
 
-  const {  senderId, recipient, type, content, timeStamp } = props;
+  const { userId, isSender, senderId, recipient, type, content, timeStamp } = props;
 
   const [visible, setVisible] = useState(false);
   const [visibleTow, setVisibleTow] = useState(false);
@@ -52,7 +50,7 @@ const DialogueContents = (props: SingleChatType) => {
   };
 
   const verificationSender = () => {
-    return senderId !== userId;
+    return isSender;
   };
   return (
     // <KeyboardAvoidingView
@@ -63,33 +61,32 @@ const DialogueContents = (props: SingleChatType) => {
     <View
       style={{
         ...styles.direction,
-        flexDirection: verificationSender() ? "row" : "row-reverse",
+        flexDirection: !isSender ? "row" : "row-reverse",
       }}
     >
       <View
         style={{
           ...styles.content,
-          flexDirection: verificationSender() ? "row" : "row-reverse",
+          flexDirection: !isSender ? "row" : "row-reverse",
         }}
       >
         <View style={styles.avatar}>
-          <Image
-            style={styles.avatar}
-            source={{
-              uri: verificationSender() ? avatar2 : avatar,
-            }}
-          />
+          <Image style={styles.avatar} source={{ uri: !isSender ? avatar2 : avatar }} />
         </View>
 
         <View
           style={{
             ...styles.details,
-            padding: type === "img" || type === "video" ? 0 : 10,
+            padding: type === TYPE_IMG || type === TYPE_VIDEO ? 0 : 10,
           }}
         >
-          <View style={verificationSender() ? styles.triangleLeft : styles.triangleRight}></View>
-          {(type === "text" && <Text style={{fontSize:16}} numberOfLines={20}>{content}</Text>) ||
-            (type === "img" && (
+          <View style={!isSender ? styles.triangleLeft : styles.triangleRight}></View>
+          {(type === TYPE_TEXT && (
+            <Text style={{ fontSize: 16 }} numberOfLines={20}>
+              {content}
+            </Text>
+          )) ||
+            (type === TYPE_IMG && (
               <ImageAout
                 source={{
                   uri: content,
@@ -98,7 +95,7 @@ const DialogueContents = (props: SingleChatType) => {
                 Press={() => handleImageView(content)}
               />
             )) ||
-            (type === "video" && (
+            (type === TYPE_VIDEO && (
               <View onLayout={async () => await getThumbnail(content)}>
                 <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
                   <Image

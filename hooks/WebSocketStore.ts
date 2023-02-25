@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+import { ERROR_CODE, INFO_CODE, MAIL_CODE } from "../types";
 import store, { StoreType } from "./store";
 import { useRemoveStore } from "./useStorage";
 
@@ -19,7 +20,9 @@ export class WebSocketStore {
 
   connect() {
     let polling: NodeJS.Timer;
-    this.socketState.socket = new WebSocket("ws://43.136.103.251:9999");
+    // this.socketState.socket = new WebSocket("ws://43.136.103.251:9999");
+    this.socketState.socket = new WebSocket("ws://192.168.1.174:9999");
+    
     this.socketState.socket.addEventListener("open", () => {
       //改变isReady状态
       this.socketState.isReady = true;
@@ -54,7 +57,7 @@ export class WebSocketStore {
   }
 }
 
-type messageContentType = {
+export type messageContentType = {
   event: number;
   data: any;
 };
@@ -71,18 +74,37 @@ const MonitorWebSocket = (webSockets: WebSocket) => {
       try {
         console.log(data);
         const messageContent = JSON.parse(data) as messageContentType;
-        if (messageContent.event === 102) {
-          //清空store
-          useRemoveStore("userInfo");
 
-          //清空UserInfo
-          store.setUser({ nickname: "", avatar: "", id: "", token: "" });
+        switch (messageContent.event) {
+          case ERROR_CODE:
+            //后台报错
+            const { server_code } = messageContent.data;
+            //-2token过期失效重新登陆
+            if (server_code === -2) {
+              //清空store
+              useRemoveStore("userInfo");
 
-          //关闭链接
-          webSockets.close();
+              //清空UserInfo
+              store.setUser({ nickname: "", avatar: "", id: "", token: "" });
 
-          // toast.show(messageContent.data.server_msg);
-          return;
+              //关闭链接
+              webSockets.close();
+            }
+            break;
+
+          case INFO_CODE:
+            //已发送token并返回 101连接成功
+            console.log(messageContent);
+
+            store.setIsToken(true);
+            break;
+
+          case MAIL_CODE:
+            console.log(messageContent);
+            break;
+
+          default:
+            break;
         }
 
         //处理除了102的数据

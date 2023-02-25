@@ -7,7 +7,7 @@ import * as Device from "expo-device";
 import { useToast } from "react-native-toast-notifications";
 import { useNavigation } from "@react-navigation/native";
 import { useStoreObject } from "../../hooks/useStorage";
-import { ProviderProps } from "../../types";
+import { LOGIN_ENTRANCE, ProviderProps } from "../../types";
 
 
 const Login = ({ webSocketStore, store }:ProviderProps) => {
@@ -29,7 +29,7 @@ const Login = ({ webSocketStore, store }:ProviderProps) => {
 
   useEffect(() => {
 
-
+    store.setCurrentEntrance(LOGIN_ENTRANCE);
     // useRemoveStore('userInfo')
   }, []);
 
@@ -45,6 +45,7 @@ const Login = ({ webSocketStore, store }:ProviderProps) => {
       });
       if (code === 200) {
         await useStoreObject("userInfo", data);
+        
         webSocketStore.connect()
         store.setUser(data)
         toast.show("登录成功");
