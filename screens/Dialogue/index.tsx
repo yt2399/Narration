@@ -227,12 +227,14 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         ...messageContent.data,
       };
       console.log(content);
-      
+      console.log(chatData, "新增前");
+
       setChatData([...chatData, content]);
       scrollToBottom(true);
       console.log(Sqlite.SqliteState.Sqlite);
-      
-      Sqlite.SqliteState.Sqlite && useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content);
+
+      Sqlite.SqliteState.Sqlite &&
+        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
     }
   };
 
@@ -288,7 +290,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         setValue("");
         scrollToBottom(true);
 
-        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content);
+        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
         const sendContent = {
           event: 201,
           data: content,
@@ -355,13 +357,14 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         >
           <FlashList
             data={chatData}
-            renderItem={({ item }) => <DialogueContents {...item} />}
-            keyExtractor={(item,index) => String(item.timeStamp) + index}
+            renderItem={({ item }) => {
+              return <DialogueContents avatar={friendInfo.avatar} {...item} />;
+            }}
+            keyExtractor={(item, index) => String(item.timeStamp) + index}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={119}
             keyboardDismissMode={"on-drag"}
             initialScrollIndex={chatData.length > 11 ? 11 : 0}
-           
             refreshControl={
               <RefreshControl
                 refreshing={refreshing}
@@ -407,7 +410,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
               enablesReturnKeyAutomatically={true}
               onSubmitEditing={handleSendChatContent}
               placeholderTextColor={"#fff"}
-              multiline={true}
+              // multiline={true}
               textAlignVertical='auto'
               maxLength={300}
             />

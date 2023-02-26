@@ -21,6 +21,7 @@ export type RootTabParamList = {
 };
 
 export type RootStackParamList = {
+  Start: undefined;
   Login: undefined;
   Home: undefined;
   Mine: undefined;
@@ -37,7 +38,8 @@ export type RootStackParamList = {
  * @param isSender 1、本人发送 2、别人发送
  */
 export interface SingleChatType {
-  isSender:number;
+  avatar?:string,
+  isSender: number;
   userId: string;
   senderId: string;
   recipient: string;
@@ -63,24 +65,22 @@ export type QueryDemandType = {
 //传输消息Type
 export const TYPE_TEXT = 1;
 export const TYPE_IMG = 2;
-export const TYPE_AUDIO  = 3;
+export const TYPE_AUDIO = 3;
 export const TYPE_VIDEO = 4;
 
-
 //页面入口
-export const HOME_ENTRANCE = 101
+export const HOME_ENTRANCE = 101;
 
 //聊天入口
-export const DIALOGUE_ENTRANCE = 101
+export const DIALOGUE_ENTRANCE = 101;
 
 //登陆入口
-export const LOGIN_ENTRANCE = 103
-
+export const LOGIN_ENTRANCE = 103;
 
 //socket协议
-export const ERROR_CODE = 102 //返回错误
-export const INFO_CODE = 101 //返回校验成功
-export const MAIL_CODE = 127 //通讯录返回
+export const ERROR_CODE = 102; //返回错误
+export const INFO_CODE = 101; //返回校验成功
+export const MAIL_CODE = 127; //通讯录返回
 
 export interface userDataInfoType {
   token: string;
@@ -106,5 +106,3 @@ export type FriendsItemProps = {
   sex: number;
   star: number;
 };
-
-

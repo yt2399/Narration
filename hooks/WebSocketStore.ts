@@ -1,4 +1,5 @@
 import { makeAutoObservable } from "mobx";
+import { AppState } from "react-native";
 import { ERROR_CODE, INFO_CODE, MAIL_CODE } from "../types";
 import store, { StoreType } from "./store";
 import { useRemoveStore } from "./useStorage";
@@ -20,9 +21,9 @@ export class WebSocketStore {
 
   connect() {
     let polling: NodeJS.Timer;
-    // this.socketState.socket = new WebSocket("ws://43.136.103.251:9999");
-    this.socketState.socket = new WebSocket("ws://192.168.1.174:9999");
-    
+    this.socketState.socket = new WebSocket("ws://43.136.103.251:9999");
+    // this.socketState.socket = new WebSocket("ws://192.168.1.174:9999");
+
     this.socketState.socket.addEventListener("open", () => {
       //改变isReady状态
       this.socketState.isReady = true;

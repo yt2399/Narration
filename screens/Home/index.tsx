@@ -8,9 +8,7 @@ import { useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
-import { FriendsItemProps, HOME_ENTRANCE, ProviderProps } from "../../types";
-import { useCreateFriendsInfoList, useDeleteSQL } from "../../hooks/useSQLite";
-import * as SQLite from "expo-sqlite";
+import { FriendsItemProps, HOME_ENTRANCE, MAIL_CODE, ProviderProps } from "../../types";
 import { messageContentType } from "../../hooks/WebSocketStore";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
@@ -34,34 +32,37 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       store.setCurrentEntrance(HOME_ENTRANCE);
 
       store.setIsActivityIndicator(true);
+
+      console.log(store?.userInfo?.id);
+      
       if (!store?.userInfo?.id) {
         navigation.navigate("Login");
         toast.show("验证失效，请重新登陆");
         return;
       }
       const { id } = store.userInfo;
-      //连接sql
-      Sqlite.connect(id);
+
       // useDeleteSQL(Sqlite.SqliteState.Sqlite)
       //获取到Info
       if (!store.isToken) {
         //判断是否连接
         if (webSocketStore.socketState.isReady) {
+
           //执行用户信息连接绑定
           webSocketStore.socketState.socket?.send(
-            // JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
-            JSON.stringify({
-              event: 101,
-              data: {
-                token:
-                  "ODY2YWVkZjVkYjAxNDQwNzk5NmMwYzliYTIzN2IxMjl8aG1RR21WNGl8MTY5MjkwMDQ0MzAwMA==",
-              },
-            })
+            JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
+            // JSON.stringify({
+            //   event: 101,
+            //   data: {
+            //     token:
+            //       "ODY2YWVkZjVkYjAxNDQwNzk5NmMwYzliYTIzN2IxMjl8aG1RR21WNGl8MTY5MjkwMDQ0MzAwMA==",
+            //   },
+            // })
           );
           console.log("发送成功");
 
           //创建好友基础列表库
-          Sqlite.SqliteState.Sqlite && useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
+          // Sqlite.SqliteState.Sqlite && useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
 
           webSocketStore.socketState.socket?.addEventListener("message", e => {
             const { data } = e;
@@ -70,7 +71,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
             const messageContent = JSON.parse(data) as messageContentType;
 
-            if (messageContent.event === 127) {
+            if (messageContent.event === MAIL_CODE) {
               console.log(messageContent, "home");
               setUserList(messageContent.data.dataList);
             }
@@ -80,7 +81,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
       if (webSocketStore.socketState.isReady) {
         webSocketStore.socketState.socket?.send(
-          JSON.stringify({ event: 199, data: { id, type: 127 } })
+          JSON.stringify({ event: 199, data: { id, type: MAIL_CODE } })
         );
         console.log("发送获取通讯录");
       }
@@ -88,13 +89,6 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     return unsubscribe;
   }, [navigation]);
 
-  const useCreateFriendsSql = async (Sqlite: SQLite.WebSQLDatabase) => {
-    try {
-      const result = await useCreateFriendsInfoList(Sqlite);
-    } catch (error) {
-      toast.show("未知错误，错误代码159");
-    }
-  };
 
   const closeRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
     if (rowMap[rowKey]) {

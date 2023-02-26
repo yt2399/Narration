@@ -1,5 +1,5 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useThemeColor, useThumbnail, useWindow } from "../../../hooks/useHooks";
 import ImageAout from "../../../components/ImageAout";
 import { VideoThumbnailsResult } from "expo-video-thumbnails";
@@ -9,20 +9,22 @@ import ImageView from "react-native-image-viewing";
 import { SingleChatType, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
 const width = useWindow("Width");
 
-const avatar =
+const userAvatar =
   "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
 
 const avatar2 =
   "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fblog%2F202106%2F28%2F20210628204020_17863.thumb.1000_0.jpg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1678716425&t=f557d5986b25451a91c201fb8988107c";
 
-const DialogueContents = (props: SingleChatType) => {
-  // const {
-  //   reverse,
-  //   body: { type, content },
-  // } = props;
-
-  const { userId, isSender, senderId, recipient, type, content, timeStamp } = props;
-
+const DialogueContents = ({
+  avatar,
+  userId,
+  isSender,
+  senderId,
+  recipient,
+  type,
+  content,
+  timeStamp,
+}: SingleChatType) => {
   const [visible, setVisible] = useState(false);
   const [visibleTow, setVisibleTow] = useState(false);
   const [imageUri, setImageUri] = useState([{ uri: "" }]);
@@ -34,6 +36,10 @@ const DialogueContents = (props: SingleChatType) => {
     uri: "",
   });
 
+  useEffect(()=>{
+    console.log(avatar,'头像');
+    
+  },[])
   const getThumbnail = async (url: string) => {
     const res = await useThumbnail(url);
     setThumbnail(res as VideoThumbnailsResult);
@@ -49,9 +55,6 @@ const DialogueContents = (props: SingleChatType) => {
     setVisibleTow(true);
   };
 
-  const verificationSender = () => {
-    return isSender;
-  };
   return (
     // <KeyboardAvoidingView
     //   behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -71,7 +74,7 @@ const DialogueContents = (props: SingleChatType) => {
         }}
       >
         <View style={styles.avatar}>
-          <Image style={styles.avatar} source={{ uri: !isSender ? avatar2 : avatar }} />
+          <Image style={styles.avatar} source={{ uri: !isSender ? avatar : userAvatar }} />
         </View>
 
         <View

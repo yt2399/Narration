@@ -80,14 +80,14 @@ export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
 /**
  * 新增单聊好友聊天记录
  */
-export function useAddSingleChatContent(Sqlite: SQLite.WebSQLDatabase, parameter: SingleChatType) {
+export function useAddSingleChatContent(Sqlite: SQLite.WebSQLDatabase, parameter: SingleChatType,friendId:string) {
   const { isSender, senderId, recipient, type, content, timeStamp } = parameter;
 
   return new Promise((resolve, reject) => {
     Sqlite.transaction(
       Db => {
         Db.executeSql(
-          `INSERT INTO u_chat_${recipient} (isSender,senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?,?)`,
+          `INSERT INTO u_chat_${friendId} (isSender,senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?,?)`,
           [isSender, senderId, recipient, type, content, timeStamp]
         );
       },

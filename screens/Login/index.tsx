@@ -10,7 +10,7 @@ import { useStoreObject } from "../../hooks/useStorage";
 import { LOGIN_ENTRANCE, ProviderProps } from "../../types";
 
 
-const Login = ({ webSocketStore, store }:ProviderProps) => {
+const Login = ({ webSocketStore, store ,Sqlite}:ProviderProps) => {
   const [account, setAccount] = useState("");
   const [pwd, setPwd] = useState("");
   const navigate = useNavigation().navigate;
@@ -47,6 +47,7 @@ const Login = ({ webSocketStore, store }:ProviderProps) => {
         await useStoreObject("userInfo", data);
         
         webSocketStore.connect()
+        Sqlite.connect(data.id)
         store.setUser(data)
         toast.show("登录成功");
         setTimeout(() => {
