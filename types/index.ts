@@ -27,6 +27,7 @@ export type RootStackParamList = {
   Mine: undefined;
   Camera: undefined;
   NotFound: undefined;
+  FriendsList:undefined
   Dialogue: {
     friendInfo: FriendsItemProps;
   };

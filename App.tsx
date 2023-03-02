@@ -6,12 +6,11 @@ import { Provider } from "mobx-react";
 import webSocketStore from "./hooks/WebSocketStore";
 import store from "./hooks/store";
 import useSqliteState from "./hooks/useSQLite";
-
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { ToastProvider } from "react-native-toast-notifications";
 import Navigation from "./navigation";
 import Loading from "./components/Loading";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 export default function App() {
   const colorScheme = useColorScheme();
@@ -27,14 +26,14 @@ export default function App() {
 
   return (
     <Provider webSocketStore={webSocketStore} store={store} Sqlite={useSqliteState}>
-      <SafeAreaProvider style={{ flex: 1, backgroundColor }}>
+
         {/* 黑夜模式 */}
         <StatusBar style={"auto"} backgroundColor={backgroundColor} animated={true} />
         <ToastProvider>
           <Navigation colorScheme={colorScheme} />
         </ToastProvider>
-        {store.isActivityIndicator && <Loading />}
-      </SafeAreaProvider>
+        {/* {store.isActivityIndicator && <Loading />} */}
+
     </Provider>
   );
 }

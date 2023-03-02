@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
+
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import { useThemeColor } from "../../hooks/useHooks";
@@ -10,13 +10,26 @@ import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
 import { FriendsItemProps, HOME_ENTRANCE, MAIL_CODE, ProviderProps } from "../../types";
 import { messageContentType } from "../../hooks/WebSocketStore";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
 
-  const [userList, setUserList] = useState<FriendsItemProps[]>([]);
+  const [userList, setUserList] = useState<FriendsItemProps[]>([
+    {
+      accountId: 1222,
+      avatar: "",
+      crtTime: 33333,
+      id: "string",
+      label: "测试",
+      nickname: "测试",
+      p: 1,
+      sex: 1,
+      star: 12,
+    },
+  ]);
 
   const color = useThemeColor("text");
 
@@ -34,7 +47,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       store.setIsActivityIndicator(true);
 
       console.log(store?.userInfo?.id);
-      
+
       if (!store?.userInfo?.id) {
         navigation.navigate("Login");
         toast.show("验证失效，请重新登陆");
@@ -47,7 +60,6 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       if (!store.isToken) {
         //判断是否连接
         if (webSocketStore.socketState.isReady) {
-
           //执行用户信息连接绑定
           webSocketStore.socketState.socket?.send(
             JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
@@ -89,7 +101,6 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     return unsubscribe;
   }, [navigation]);
 
-
   const closeRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
     if (rowMap[rowKey]) {
       rowMap[rowKey].closeRow();
@@ -105,51 +116,52 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor, paddingBottom: 0 }}>
-      <View style={[styles.HomeMain, { backgroundColor, paddingBottom: 0 }]}>
-        <View style={[styles.head, styleAll.center]}>
-          <AntDesign name='search1' size={24} color={color} />
-          <AntDesign name='pluscircle' size={24} color={color} />
-        </View>
-
-        <SwipeListView
-          style={{ flex: 1, backgroundColor: secondaryBack }}
-          disableRightSwipe
-          data={userList}
-          renderItem={({ item }: { item: FriendsItemProps }) => (
-            <TouchableHighlight
-              onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
-              style={styles.rowFront}
-            >
-              <FriendsItem {...item} />
-            </TouchableHighlight>
-          )}
-          renderHiddenItem={({ item }, rowMap) => (
-            <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
-                onPress={() => closeRow(rowMap, item.id)}
-              >
-                <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={0.7}
-                style={[styles.backRightBtn, styles.backRightBtnRight]}
-                onPress={() => deleteRow(rowMap, item.id)}
-              >
-                <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-          leftOpenValue={0}
-          rightOpenValue={-150}
-          previewRowKey={"0"}
-          previewOpenValue={-40}
-          previewOpenDelay={2000}
-          showsVerticalScrollIndicator={false}
-        />
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor }}
+      edges={["top", "right", "left"]}
+    >
+      <View style={[styles.head, styleAll.center]}>
+        <AntDesign name='search1' size={24} color={color} />
+        <AntDesign name='pluscircle' size={24} color={color} />
       </View>
+
+      <SwipeListView
+        style={{ flex: 1, backgroundColor: secondaryBack }}
+        disableRightSwipe
+        data={userList}
+        renderItem={({ item }: { item: FriendsItemProps }) => (
+          <TouchableHighlight
+            onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
+            style={styles.rowFront}
+          >
+            <FriendsItem {...item} />
+          </TouchableHighlight>
+        )}
+        renderHiddenItem={({ item }, rowMap) => (
+          <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
+              onPress={() => closeRow(rowMap, item.id)}
+            >
+              <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={[styles.backRightBtn, styles.backRightBtnRight]}
+              onPress={() => deleteRow(rowMap, item.id)}
+            >
+              <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        leftOpenValue={0}
+        rightOpenValue={-150}
+        previewRowKey={"0"}
+        previewOpenValue={-40}
+        previewOpenDelay={2000}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 };
@@ -162,6 +174,7 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   head: {
+    width: "100%",
     height: 50,
     justifyContent: "space-between",
     paddingHorizontal: 20,
