@@ -1,35 +1,25 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-
+import { Shadow, version } from "react-native-shadow-2";
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import { useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
-import { FriendsItemProps, HOME_ENTRANCE, MAIL_CODE, ProviderProps } from "../../types";
+import { FriendsItemProps, HOME_ENTRANCE, INFO_CODE, MAIL_CODE, ProviderProps } from "../../types";
 import { messageContentType } from "../../hooks/WebSocketStore";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRemoveStore } from "../../hooks/useStorage";
+import { StatusBar } from "expo-status-bar";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
 
-  const [userList, setUserList] = useState<FriendsItemProps[]>([
-    {
-      accountId: 1222,
-      avatar: "",
-      crtTime: 33333,
-      id: "string",
-      label: "测试",
-      nickname: "测试",
-      p: 1,
-      sex: 1,
-      star: 12,
-    },
-  ]);
+  const [userList, setUserList] = useState<FriendsItemProps[]>([]);
 
   const color = useThemeColor("text");
 
@@ -37,11 +27,8 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const toast = useToast();
 
   useEffect(() => {
+    // useRemoveStore('userInfo')
     const unsubscribe = navigation.addListener("focus", async () => {
-      console.log(webSocketStore);
-      console.log(store);
-      console.log(Sqlite);
-
       store.setCurrentEntrance(HOME_ENTRANCE);
 
       store.setIsActivityIndicator(true);
@@ -57,21 +44,13 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
       // useDeleteSQL(Sqlite.SqliteState.Sqlite)
       //获取到Info
-      if (!store.isToken) {
+      if (!store.isConnect) {
         //判断是否连接
         if (webSocketStore.socketState.isReady) {
           //执行用户信息连接绑定
           webSocketStore.socketState.socket?.send(
             JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
-            // JSON.stringify({
-            //   event: 101,
-            //   data: {
-            //     token:
-            //       "ODY2YWVkZjVkYjAxNDQwNzk5NmMwYzliYTIzN2IxMjl8aG1RR21WNGl8MTY5MjkwMDQ0MzAwMA==",
-            //   },
-            // })
           );
-          console.log("发送成功");
 
           //创建好友基础列表库
           // Sqlite.SqliteState.Sqlite && useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
@@ -82,6 +61,10 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             if (data === "PONG") return;
 
             const messageContent = JSON.parse(data) as messageContentType;
+
+            if (messageContent.event === INFO_CODE) {
+              store.setIsConnect(true);
+            }
 
             if (messageContent.event === MAIL_CODE) {
               console.log(messageContent, "home");
@@ -117,16 +100,17 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor }}
+      style={{ flex: 1, backgroundColor: secondaryBack }}
       edges={["top", "right", "left"]}
     >
+      <StatusBar backgroundColor={secondaryBack} animated={true} />
       <View style={[styles.head, styleAll.center]}>
         <AntDesign name='search1' size={24} color={color} />
         <AntDesign name='pluscircle' size={24} color={color} />
       </View>
 
       <SwipeListView
-        style={{ flex: 1, backgroundColor: secondaryBack }}
+        style={[{ backgroundColor }, styles.DialogueList]}
         disableRightSwipe
         data={userList}
         renderItem={({ item }: { item: FriendsItemProps }) => (
@@ -203,7 +187,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingLeft: 15,
+    // paddingLeft: 15,
   },
   backRightBtn: {
     alignItems: "center",
@@ -221,5 +205,13 @@ const styles = StyleSheet.create({
   backRightBtnRight: {
     backgroundColor: "#e75d58",
     right: 0,
+  },
+  DialogueList: {
+    width: "100%",
+    height: "70%",
+    marginTop: "5%",
+    marginBottom: "4%",
+    borderRadius: 20,
+    overflow: "hidden",
   },
 });

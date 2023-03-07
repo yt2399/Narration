@@ -10,13 +10,13 @@ import {
   KeyboardEvent,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
 import { useThemeColor, useWindow, useColorScheme } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { DIALOGUE_ENTRANCE, FriendsItemProps, ProviderProps, SingleChatType } from "../../types";
+import { DIALOGUE_ENTRANCE, FriendsItemProps, ProviderProps, SingleChatType, TYPE_TEXT } from "../../types";
 import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
 import EmojiPicker from "rn-emoji-keyboard";
@@ -178,7 +178,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     setValue(text);
   };
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     store.setCurrentEntrance(DIALOGUE_ENTRANCE);
     //监听键盘拉起
     const keyboardDidShowListener = Keyboard.addListener("keyboardDidShow", onKeyboardDidShow);
@@ -212,7 +212,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     emojiList[0] && setValue(value + emojiList[0]);
   }, [emojiList]);
 
-  const watchMsg = (e: MessageEvent<any>) => {
+  const watchMsg = async (e: MessageEvent<any>) => {
     const { data } = e;
     console.log(data, "聊天窗口");
 
@@ -229,12 +229,14 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       console.log(content);
       console.log(chatData, "新增前");
 
-      setChatData([...chatData, content]);
-      scrollToBottom(true);
-      console.log(Sqlite.SqliteState.Sqlite);
+      // setChatData([...chatData, content]);
+      
 
       Sqlite.SqliteState.Sqlite &&
         useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
+
+      await wait();
+
     }
   };
 
@@ -254,6 +256,8 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
           }
         });
       }
+
+      scrollToBottom(true);
     });
   };
 
@@ -278,7 +282,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       userId: store.userInfo?.id || "",
       senderId: store.userInfo?.id || "",
       recipient: friendsId,
-      type: 1,
+      type: TYPE_TEXT,
       content: value,
       timeStamp: now,
     };

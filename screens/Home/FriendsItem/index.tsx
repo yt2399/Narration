@@ -22,7 +22,7 @@ const FriendsItem = (data :FriendsItemProps) => {
       style={[
         styles.ItemMain,
         styleAll.center,
-        { borderBottomColor: Line, backgroundColor: secondaryBack },
+        { borderBottomColor: Line, backgroundColor },
       ]}
     >
       <Image

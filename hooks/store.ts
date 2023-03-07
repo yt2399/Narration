@@ -31,6 +31,10 @@ export class Store {
   isToken: boolean = false;
 
 
+  //是否发送101已连接
+  isConnect:boolean = false
+
+
   //加载是否显示
   isActivityIndicator:boolean = false
 
@@ -60,6 +64,10 @@ export class Store {
 
   setIsActivityIndicator(activity:boolean){
     this.isActivityIndicator = activity
+  }
+
+  setIsConnect(result:boolean){
+    this.isConnect = result
   }
 
 }

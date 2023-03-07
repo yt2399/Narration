@@ -25,6 +25,7 @@ export class WebSocketStore {
     // this.socketState.socket = new WebSocket("ws://192.168.1.174:9999");
 
     this.socketState.socket.addEventListener("open", () => {
+      
       //改变isReady状态
       this.socketState.isReady = true;
 

@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, AppState } from "react-native";
+import { View, Text, StyleSheet, AppState, ImageBackground } from "react-native";
 import React, { useEffect } from "react";
 import { ProviderProps } from "../../types";
 import { useNavigation } from "@react-navigation/native";
@@ -10,7 +10,7 @@ import { useCreateFriendsInfoList } from "../../hooks/useSQLite";
 const Start = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const navigation = useNavigation();
   const toast = useToast();
-
+  const img = require("../../assets/backgroundImg/startImg.png");
   useEffect(() => {
     AppState.addEventListener("change", nextAppState => {
       if (nextAppState === "background" || nextAppState === "inactive") {
@@ -64,11 +64,10 @@ const Start = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   };
 
   return (
-    <View style={[styles.StartMain, styleAll.center]}>
-      <View style={[styleAll.center, { width: "100%", flexDirection: "column" }]}>
-        <View style={styles.logo}></View>
-        <Text style={{ fontFamily: "Inter-Black", fontSize: 20 }}>连接彼此，探索世界</Text>
-      </View>
+    <View style={[styles.StartMain]}>
+      <ImageBackground source={img} style={{ flex: 1 }}>
+        <Text style={styles.Text}>连接彼此，探索世界</Text>
+      </ImageBackground>
     </View>
   );
 };
@@ -80,10 +79,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 100,
-    backgroundColor: "#ccc",
+  Text: {
+    marginTop:"65%",
+    marginLeft:50,
+    fontFamily: "Inter-Black",
+    fontSize: 28,
   },
 });

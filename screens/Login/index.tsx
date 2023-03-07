@@ -9,12 +9,10 @@ import { useNavigation } from "@react-navigation/native";
 import { useStoreObject } from "../../hooks/useStorage";
 import { LOGIN_ENTRANCE, ProviderProps } from "../../types";
 
-
-const Login = ({ webSocketStore, store ,Sqlite}:ProviderProps) => {
+const Login = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const [account, setAccount] = useState("");
   const [pwd, setPwd] = useState("");
   const navigate = useNavigation().navigate;
-
 
   const toast = useToast();
 
@@ -28,7 +26,6 @@ const Login = ({ webSocketStore, store ,Sqlite}:ProviderProps) => {
   };
 
   useEffect(() => {
-
     store.setCurrentEntrance(LOGIN_ENTRANCE);
     // useRemoveStore('userInfo')
   }, []);
@@ -37,7 +34,6 @@ const Login = ({ webSocketStore, store ,Sqlite}:ProviderProps) => {
     const digest = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.MD5, pwd);
     const deviceNo = Device.osInternalBuildId;
     try {
-
       const { code, data } = await Https.userLogin({
         account,
         pwd: digest,
@@ -45,16 +41,18 @@ const Login = ({ webSocketStore, store ,Sqlite}:ProviderProps) => {
       });
       if (code === 200) {
         await useStoreObject("userInfo", data);
-        
-        webSocketStore.connect()
-        Sqlite.connect(data.id)
-        store.setUser(data)
+
+        webSocketStore.connect();
+        Sqlite.connect(data.id);
+        store.setUser(data);
+
+        // webSocketStore.socketState.socket?.send(
+        //   JSON.stringify({ event: 101, data: { token: data.token } })
+        // );
         toast.show("登录成功");
         setTimeout(() => {
           navigate("Home");
-        }, 200)
-
-
+        }, 200);
       }
     } catch (error: any) {
       console.log(error);

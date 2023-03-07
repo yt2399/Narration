@@ -1,4 +1,3 @@
-import * as React from "react";
 import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import {
   createNativeStackNavigator,
@@ -15,16 +14,15 @@ import Login from "../screens/Login";
 import { inject, observer } from "mobx-react";
 import Start from "../screens/Start";
 import { useColorScheme } from "../hooks/useHooks";
-import { Entypo, FontAwesome, FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import {
   AnimatedTabBarNavigator,
   DotSize, // optional
-  TabElementDisplayOptions, // optional
-  TabButtonLayout, // optional
-  IAppearanceOptions, // optional
 } from "react-native-animated-nav-tab-bar";
 import Colors from "../constants/Colors";
 import FriendsList from "../screens/FriendsList";
+
+
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
     <NavigationContainer
@@ -133,13 +131,14 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function HomeRouter() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name='Start' component={StartScreen} options={{ headerShown: false }} />
+      <Stack.Screen name='Start' component={StartScreen} options={{ headerShown: false ,gestureEnabled:false}}  />
       <Stack.Screen
         name='Home'
         component={BottomTabNavigator}
         options={{
           headerShown: false,
-          gestureEnabled:false
+          gestureEnabled: false,
+          animationTypeForReplace:"push",
         }}
       />
       <Stack.Screen
@@ -149,24 +148,11 @@ function HomeRouter() {
         initialParams={{}}
       />
       <Stack.Screen name='Camera' component={Cameras} options={{ headerShown: false }} />
-      <Stack.Screen name='Login' component={LoginScreen} options={{ headerShown: false }} />
+      <Stack.Screen name='Login' component={LoginScreen} options={{ headerShown: false ,gestureEnabled:false}} />
     </Stack.Navigator>
   );
 }
 
-// function MineRouter() {
-//   return (
-//     <Stack.Navigator>
-//       <Stack.Screen
-//         name='Mine'
-//         component={MineScreen}
-//         options={{
-//           headerShown: false,
-//         }}
-//       />
-//     </Stack.Navigator>
-//   );
-// }
 
 const Tabs = AnimatedTabBarNavigator();
 // BottomTab.Navigator 快捷创建底部tab导航栏组件
@@ -178,10 +164,11 @@ function BottomTabNavigator() {
       // default configuration from React Navigation
       appearance={{
         shadow: true,
-        floating: true,
+        // floating: true,
         tabBarBackground: Colors[colorScheme].background,
         dotSize: DotSize["SMALL"],
-        // dotCornerRadius:10
+        dotCornerRadius: 100,
+        // floating:true
       }}
       initialRouteName='Home'
       tabBarOptions={{
@@ -191,7 +178,7 @@ function BottomTabNavigator() {
       }}
     >
       <Tabs.Screen
-        name='叙述'
+        name="消息"
         component={HomeScreen}
         options={{
           tabBarIcon: ({ focused, color, size }: any) => (
@@ -200,7 +187,7 @@ function BottomTabNavigator() {
         }}
       />
       <Tabs.Screen
-        name='好友列表'
+        name='好友'
         component={FriendsListScreen}
         options={{
           tabBarIcon: ({ focused, color, size }: any) => (
@@ -209,7 +196,7 @@ function BottomTabNavigator() {
         }}
       />
       <Tabs.Screen
-        name='设置'
+        name='我的'
         component={MineScreen}
         options={{
           tabBarIcon: ({ focused, color, size }: any) => (
@@ -221,14 +208,4 @@ function BottomTabNavigator() {
       />
     </Tabs.Navigator>
   );
-}
-
-/**
- * You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
- */
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>["name"];
-  color: string;
-}) {
-  return <FontAwesome size={30} style={{ marginBottom: -3 }} {...props} />;
 }
