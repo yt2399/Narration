@@ -16,13 +16,19 @@ import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
 import { useThemeColor, useWindow, useColorScheme } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
-import { DIALOGUE_ENTRANCE, FriendsItemProps, ProviderProps, SingleChatType, TYPE_TEXT } from "../../types";
+import {
+  DIALOGUE_ENTRANCE,
+  FriendsItemProps,
+  ProviderProps,
+  SingleChatType,
+  TYPE_TEXT,
+} from "../../types";
 import Colors from "../../constants/Colors";
 import DialogueHead from "./DialogueHead";
 import EmojiPicker from "rn-emoji-keyboard";
 import { EmojiType } from "rn-emoji-keyboard/lib/typescript/src/types";
 import More from "./More";
-import { useRoute } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { messageContentType } from "../../hooks/WebSocketStore";
 import {
   useAddSingleChatContent,
@@ -30,6 +36,7 @@ import {
   useQueryDemand,
 } from "../../hooks/useSQLite";
 import { useToast } from "react-native-toast-notifications";
+import { setStatusBarStyle, StatusBar } from "expo-status-bar";
 
 const DATA = [
   {
@@ -148,6 +155,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   const FlashLists = useRef<FlashList<SingleChatType>>(null);
 
+  const navigation = useNavigation();
   //true:文本输入模式
   //false:语音输入
   const [mode, setMode] = useState(true);
@@ -209,12 +217,18 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   }, []);
 
   useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", async () => {
+      setStatusBarStyle("auto");
+    });
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
     emojiList[0] && setValue(value + emojiList[0]);
   }, [emojiList]);
 
   const watchMsg = async (e: MessageEvent<any>) => {
     const { data } = e;
-    console.log(data, "聊天窗口");
 
     if (data === "PONG") return;
 
@@ -226,17 +240,13 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         userId: store.userInfo?.id || "",
         ...messageContent.data,
       };
-      console.log(content);
-      console.log(chatData, "新增前");
 
-      // setChatData([...chatData, content]);
-      
+      setChatData(chatData => [...chatData, content]);
 
       Sqlite.SqliteState.Sqlite &&
         useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
 
-      await wait();
-
+      // await wait();
     }
   };
 
@@ -330,6 +340,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   return (
     <View style={[{ flex: 1, backgroundColor }, styleAll.iosBottom]}>
+      <StatusBar style='auto' backgroundColor={backgroundColor} animated={true} />
       <MaterialCommunityIcons
         name='keyboard-settings'
         size={15}

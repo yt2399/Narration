@@ -8,12 +8,12 @@ import LinkingConfiguration from "./LinkingConfiguration";
 import Homes from "../screens/Home";
 import Mine from "../screens/Mine";
 import Dialogue from "../screens/Dialogue";
-import { ColorSchemeName } from "react-native";
+import { ColorSchemeName, StyleSheet } from "react-native";
 import Cameras from "../screens/Camera";
 import Login from "../screens/Login";
 import { inject, observer } from "mobx-react";
 import Start from "../screens/Start";
-import { useColorScheme } from "../hooks/useHooks";
+import { useColorScheme, useThemeColor } from "../hooks/useHooks";
 import { Entypo, FontAwesome5, Ionicons } from "@expo/vector-icons";
 import {
   AnimatedTabBarNavigator,
@@ -21,6 +21,7 @@ import {
 } from "react-native-animated-nav-tab-bar";
 import Colors from "../constants/Colors";
 import FriendsList from "../screens/FriendsList";
+import { Div } from "react-native-magnus";
 
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
@@ -153,38 +154,50 @@ function HomeRouter() {
   );
 }
 
-
+const styles = StyleSheet.create({
+  tabsStyle:{
+    position:"absolute",
+    width:0,
+    height:0
+  }
+})
 const Tabs = AnimatedTabBarNavigator();
 // BottomTab.Navigator 快捷创建底部tab导航栏组件
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
-
+  const secondaryBack = useThemeColor("secondaryBack");
   return (
-    <Tabs.Navigator
+
+      <Tabs.Navigator
       // default configuration from React Navigation
       appearance={{
         shadow: true,
         // floating: true,
-        tabBarBackground: Colors[colorScheme].background,
+        tabBarBackground: secondaryBack,
         dotSize: DotSize["SMALL"],
         dotCornerRadius: 100,
-        // floating:true
+        
       }}
       initialRouteName='Home'
       tabBarOptions={{
         activeBackgroundColor: Colors[colorScheme].text,
         activeTintColor: Colors[colorScheme].line,
         inactiveTintColor: Colors[colorScheme].text,
+        labelStyle:styles.tabsStyle
+        
       }}
     >
       <Tabs.Screen
         name="消息"
         component={HomeScreen}
+        
         options={{
           tabBarIcon: ({ focused, color, size }: any) => (
             <Entypo name='chat' size={24} color={color} focused={focused} />
           ),
+          
         }}
+        
       />
       <Tabs.Screen
         name='好友'
@@ -207,5 +220,7 @@ function BottomTabNavigator() {
         }}
       />
     </Tabs.Navigator>
+    
   );
 }
+

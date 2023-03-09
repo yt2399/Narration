@@ -3,12 +3,10 @@ import React from "react";
 import { styleAll } from "../../../style";
 import { useThemeColor } from "../../../hooks/useHooks";
 import { FriendsItemProps } from "../../../types";
+import { Avatar } from "react-native-magnus";
 
-
-
-const FriendsItem = (data :FriendsItemProps) => {
-
-  const {avatar,id,nickname} = data
+const FriendsItem = (data: FriendsItemProps) => {
+  const { avatar, id, nickname } = data;
 
   const avatars =
     "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -18,22 +16,21 @@ const FriendsItem = (data :FriendsItemProps) => {
   const Line = useThemeColor("line");
   const color = useThemeColor("text");
   return (
-    <View
-      style={[
-        styles.ItemMain,
-        styleAll.center,
-        { borderBottomColor: Line, backgroundColor },
-      ]}
-    >
-      <Image
-        style={styles.avatar}
+    <View style={[styles.ItemMain, styleAll.center, { borderBottomColor: Line, backgroundColor }]}>
+      <Avatar
+        size={50}
+        color='red800'
+        shadow={1}
+        rounded="lg"
         source={{
           uri: avatar || avatars,
         }}
-      />
+      >
+        {nickname}
+      </Avatar>
       <View style={styles.ItemInfo}>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>
-          <Text style={[styles.ItemName, { color }]}>{nickname || '未知用户'}</Text>
+          <Text style={[styles.ItemName, { color }]}>{nickname || "未知用户"}</Text>
           <Text style={styles.lastNews}>五分钟前</Text>
         </View>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>

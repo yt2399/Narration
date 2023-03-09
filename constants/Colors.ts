@@ -12,7 +12,7 @@ const threeLevelDark = "#282828";
 const threeLevelLight = "#f8f9fa";
 export default {
   light: {
-    text: "#000",
+    text: "#202123",
     background: "#fff",
     secondaryBack: secondaryLight,
     threeLevelBack: threeLevelLight,
@@ -23,7 +23,7 @@ export default {
   },
   dark: {
     text: "#fff",
-    background: "#000",
+    background: "#202123",
     secondaryBack: secondaryDark,
     threeLevelBack: threeLevelDark,
     tint: tintColorDark,

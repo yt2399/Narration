@@ -1,10 +1,9 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { Shadow, version } from "react-native-shadow-2";
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
-import { useThemeColor } from "../../hooks/useHooks";
+import { useColorScheme, useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
@@ -12,14 +11,18 @@ import { FriendsItemProps, HOME_ENTRANCE, INFO_CODE, MAIL_CODE, ProviderProps } 
 import { messageContentType } from "../../hooks/WebSocketStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRemoveStore } from "../../hooks/useStorage";
-import { StatusBar } from "expo-status-bar";
+import { setStatusBarStyle, StatusBar } from "expo-status-bar";
+import { Div } from "react-native-magnus";
+import ActionSheet, { ActionSheetRef, SheetProvider } from "react-native-actions-sheet";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
-
+  const useColorSchemes = useColorScheme();
   const [userList, setUserList] = useState<FriendsItemProps[]>([]);
+
+  const ActionSheets = useRef<ActionSheetRef>(null);
 
   const color = useThemeColor("text");
 
@@ -27,8 +30,8 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const toast = useToast();
 
   useEffect(() => {
-    // useRemoveStore('userInfo')
     const unsubscribe = navigation.addListener("focus", async () => {
+      setStatusBarStyle("inverted");
       store.setCurrentEntrance(HOME_ENTRANCE);
 
       store.setIsActivityIndicator(true);
@@ -36,7 +39,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       console.log(store?.userInfo?.id);
 
       if (!store?.userInfo?.id) {
-        navigation.navigate("Login");
+        // navigation.navigate("Login");
         toast.show("验证失效，请重新登陆");
         return;
       }
@@ -98,19 +101,26 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     setUserList(newData);
   };
 
+  const handleOpenExpression = () => {
+    ActionSheets.current?.show();
+  };
+
   return (
-    <SafeAreaView
-      style={{ flex: 1, backgroundColor: secondaryBack }}
-      edges={["top", "right", "left"]}
-    >
-      <StatusBar backgroundColor={secondaryBack} animated={true} />
-      <View style={[styles.head, styleAll.center]}>
-        <AntDesign name='search1' size={24} color={color} />
-        <AntDesign name='pluscircle' size={24} color={color} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: color }} edges={["top", "right", "left"]}>
+      <StatusBar style={"inverted"} backgroundColor={color} animated={true} />
+
+      <View style={[styles.head, styleAll.center,{shadowColor: backgroundColor}]}>
+        <AntDesign name='search1' size={24} color={backgroundColor} />
+        <Text style={{ color: backgroundColor, fontSize: 18, fontFamily: "Inter-Black" }}>
+          叙述
+        </Text>
+        <TouchableOpacity activeOpacity={0.7} onPress={handleOpenExpression}>
+          <AntDesign name='pluscircle' size={24} color={backgroundColor} />
+        </TouchableOpacity>
       </View>
 
       <SwipeListView
-        style={[{ backgroundColor }, styles.DialogueList]}
+        style={[{ backgroundColor }, styles.DialogueList, styleAll.androidTop]}
         disableRightSwipe
         data={userList}
         renderItem={({ item }: { item: FriendsItemProps }) => (
@@ -146,6 +156,20 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         previewOpenDelay={2000}
         showsVerticalScrollIndicator={false}
       />
+
+      <ActionSheet
+        ref={ActionSheets}
+        useBottomSafeAreaPadding
+        containerStyle={{
+          height: "40%",
+          backgroundColor: secondaryBack,
+          
+        }}
+        statusBarTranslucent
+      >
+        <View style={styleAll.MoreHead} />
+        
+      </ActionSheet>
     </SafeAreaView>
   );
 };
@@ -161,13 +185,13 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 50,
     justifyContent: "space-between",
+    alignItems: "center",
     paddingHorizontal: 20,
-    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.35,
     shadowRadius: 3.84,
     elevation: 50,
   },
@@ -208,10 +232,10 @@ const styles = StyleSheet.create({
   },
   DialogueList: {
     width: "100%",
-    height: "70%",
+    height: "100%",
     marginTop: "5%",
-    marginBottom: "4%",
-    borderRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
     overflow: "hidden",
   },
 });

@@ -11,6 +11,7 @@ import { ToastProvider } from "react-native-toast-notifications";
 import Navigation from "./navigation";
 import Loading from "./components/Loading";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { ThemeProvider } from "react-native-magnus";
 
 export default function App() {
   const colorScheme = useColorScheme();
@@ -29,9 +30,12 @@ export default function App() {
 
         {/* 黑夜模式 */}
         <StatusBar style={"auto"} backgroundColor={backgroundColor} animated={true} />
-        <ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
           <Navigation colorScheme={colorScheme} />
         </ToastProvider>
+        </ThemeProvider>
+        
         {/* {store.isActivityIndicator && <Loading />} */}
 
     </Provider>

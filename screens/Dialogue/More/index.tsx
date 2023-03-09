@@ -47,7 +47,7 @@ const More = () => {
   }, []);
   return (
     <View style={styles.MoreMain}>
-      <View style={[styles.MoreHead, { backgroundColor: "#e9ecef" }]} />
+      <View style={styleAll.MoreHead} />
 
       <View style={styles.blockMain}>
         {Block.map(({ name, icon, title }) => (
@@ -74,14 +74,6 @@ export default More;
 const styles = StyleSheet.create({
   MoreMain: {
     flex: 1,
-  },
-  MoreHead: {
-    width: 70,
-    height: 5,
-    borderRadius: 99,
-    alignItems: "center",
-    marginVertical: 10,
-    marginLeft: Width / 2 - 35,
   },
   blockMain: {
     flex: 1,
