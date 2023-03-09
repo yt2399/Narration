@@ -2,8 +2,8 @@ import { StyleSheet, TextInput, useWindowDimensions, View, Animated } from "reac
 import React, { useEffect, useRef, useState } from "react";
 import { FriendsItemProps, MAIL_CODE, ProviderProps } from "../../types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useThemeColor, useWindow } from "../../hooks/useHooks";
-import { setStatusBarStyle, StatusBar } from "expo-status-bar";
+import { useColorScheme, useThemeColor, useWindow } from "../../hooks/useHooks";
+import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-status-bar";
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import { useNavigation } from "@react-navigation/native";
@@ -27,12 +27,21 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     { key: "newFriends", title: "新的朋友" },
   ]);
   const navigation = useNavigation();
-  const LeftAnim = useRef(new Animated.Value(0)).current;
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const layout = useWindowDimensions();
+  const Scheme = useColorScheme();
   const [index, setIndex] = React.useState(0);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("focus", async () => {
+      setStatusBarStyle("dark");
+      setStatusBarBackgroundColor("#fff", true);
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   useEffect(() => {
     if (!store?.userInfo?.id) {
@@ -41,7 +50,8 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       return;
     }
     const { id } = store.userInfo;
-
+    console.log(webSocketStore.socketState.isReady,id);
+    
     if (webSocketStore.socketState.isReady) {
       getFriendsAll();
 
@@ -49,26 +59,23 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         JSON.stringify({ event: 199, data: { id, type: MAIL_CODE } })
       );
     }
-    const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle("auto");
-    });
-
-    return unsubscribe;
-  }, [navigation]);
+  }, []);
 
   const Toast = useToast();
   const [userList, setUserList] = useState<FriendsItemProps[]>([]);
 
   const getFriendsAll = () => {
+
     webSocketStore.socketState.socket?.addEventListener("message", e => {
       const { data } = e;
-
+      console.log(data);
+      
       if (data === "PONG") return;
 
       const messageContent = JSON.parse(data) as messageContentType;
 
       if (messageContent.event === MAIL_CODE) {
-        console.log(messageContent, "FriendsList");
+
         setUserList(messageContent.data.dataList);
       }
     });
@@ -80,14 +87,14 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     console.log("触发搜索");
   };
 
-  const all = () => <FriendsAll userList={userList} />;
+  const all = () => <FriendsAll Sqlite={Sqlite.SqliteState.Sqlite} userList={userList}  />;
   const groupChat = () => <GroupChat />;
   const starTarget = () => <StarTarget />;
   const newFriends = () => <NewFriends />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }} edges={["top", "right", "left"]}>
-      <StatusBar style='auto' backgroundColor={backgroundColor} animated={true} />
+      {/* <StatusBar style={'auto'}  animated={true} /> */}
 
       <View style={[styles.header, styleAll.center, { backgroundColor: threeLevelBack }]}>
         <AntDesign name='search1' size={24} color={"#ccc"} />
@@ -155,5 +162,5 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     backgroundColor: "#edf3fc",
     justifyContent: "center",
-  }
+  },
 });

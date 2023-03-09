@@ -1,17 +1,19 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity } from "react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import { FriendsItemProps } from "../../../types";
-
+import * as SQLite from "expo-sqlite";
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, Div as Box } from "react-native-magnus";
 import { userAvatar, useThemeColor } from "../../../hooks/useHooks";
 import { styleAll } from "../../../style";
+import { useAddFriendMsg } from "../../../hooks/useSQLite";
 
 type FriendsAllProps = {
   userList: FriendsItemProps[];
+  Sqlite: SQLite.WebSQLDatabase | null;
 };
 
-const FriendsAll = ({ userList }: FriendsAllProps) => {
+const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   const MemoUserList = useMemo(() => userList, []);
   const Line = useThemeColor("line");
   const color = useThemeColor("text");
@@ -19,8 +21,29 @@ const FriendsAll = ({ userList }: FriendsAllProps) => {
   //   // console.log(userLists);
   // }, []);
 
-  const handleSelect = (userInfo: FriendsItemProps) => {
-    console.log(userInfo);
+  const handleSelect = async ({ id, avatar, nickname, star, updTime }: FriendsItemProps) => {
+    const finalTime = Math.floor(new Date().getTime() / 1000);
+    const parameter = {
+      friendsId:id,
+      avatar,
+      friendsName: nickname,
+      lastMessage: " ",
+      finalTime,
+      star,
+      updTime,
+    };
+    console.log(Sqlite);
+    
+    if (Sqlite) {
+      try {
+        await useAddFriendMsg(Sqlite, parameter, id);
+        console.log(111);
+        
+      } catch (error) {
+        console.log(error);
+        
+      }
+    }
   };
 
   return (
@@ -28,7 +51,11 @@ const FriendsAll = ({ userList }: FriendsAllProps) => {
       data={MemoUserList}
       renderItem={({ item }) => {
         return (
-          <TouchableHighlight underlayColor={Line} activeOpacity={0.7} onPress={() => handleSelect(item)}>
+          <TouchableHighlight
+            underlayColor={Line}
+            activeOpacity={0.7}
+            onPress={() => handleSelect(item)}
+          >
             <Box p={10} row alignItems={"center"} borderBottomWidth={1} borderColor={Line}>
               <Avatar
                 shadow={1}
@@ -40,7 +67,7 @@ const FriendsAll = ({ userList }: FriendsAllProps) => {
               />
               <Text style={[styleAll.font, { marginLeft: 20, color }]}>{item.nickname}</Text>
             </Box>
-          </TouchableHighlight >
+          </TouchableHighlight>
         );
         //   return <DialogueContents avatar={friendInfo.avatar} {...item} />;
       }}

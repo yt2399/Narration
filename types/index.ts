@@ -27,19 +27,18 @@ export type RootStackParamList = {
   Mine: undefined;
   Camera: undefined;
   NotFound: undefined;
-  FriendsList:undefined
+  FriendsList: undefined;
   Dialogue: {
-    friendInfo: FriendsItemProps;
+    friendInfo: FriendInfoListType;
   };
 };
 
 /**
- * vite HTML引入图片方法
  * @param type 1、文本 2、图片 3、语音  4、视频
  * @param isSender 1、本人发送 2、别人发送
  */
 export interface SingleChatType {
-  avatar?:string,
+  avatar?: string;
   isSender: number;
   userId: string;
   senderId: string;
@@ -47,6 +46,22 @@ export interface SingleChatType {
   type: 1 | 2 | 3 | 4;
   content: string;
   timeStamp: number;
+}
+
+/**
+ * @param lastMessage 最后一条留言
+ * @param star 0、未标星 2、星标好友
+ * @param updTime 上次资料修改时间
+ */
+
+export interface FriendInfoListType {
+  friendsId:string,
+  avatar: string;
+  friendsName: string;
+  lastMessage: string;
+  finalTime: number;
+  star: number;
+  updTime: number;
 }
 
 export type SingleChatContentType = {
@@ -106,4 +121,5 @@ export type FriendsItemProps = {
   p: number;
   sex: number;
   star: number;
+  updTime:number
 };

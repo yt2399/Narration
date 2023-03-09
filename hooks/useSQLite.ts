@@ -1,6 +1,6 @@
 import { makeAutoObservable } from "mobx";
 import * as SQLite from "expo-sqlite";
-import { QueryDemandType, SingleChatType } from "../types";
+import { FriendInfoListType, QueryDemandType, SingleChatType } from "../types";
 
 export type useSqliteStateType = {
   Sqlite: SQLite.WebSQLDatabase | null;
@@ -33,6 +33,101 @@ const useSqliteState = new useSqlite();
  */
 
 /**
+ * 创建好友信息列表
+ */
+export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
+  Sqlite.transaction(Db => {
+    Db.executeSql(
+      `CREATE TABLE IF NOT EXISTS u_friends_info (
+          friendsId TEXT PRIMARY KEY ,
+          avatar TEXT NOT NULL,
+          friendsName TEXT NOT NULL,
+          lastMessage TEXT NOT NULL,
+          finalTime INT NOT NULL,
+          star INT NOT NULL,
+          updTime INT NOT NULL
+          )`
+    );
+  });
+}
+
+/**
+ * 新增好友列表信息
+ */
+export function useAddFriendMsg(
+  Sqlite: SQLite.WebSQLDatabase,
+  parameter: FriendInfoListType,
+  friendId: string
+) {
+  const { avatar, friendsName, lastMessage, finalTime, star, updTime } = parameter;
+
+  return new Promise((resolve, reject) => {
+    Sqlite.transaction(
+      Db => {
+        Db.executeSql(
+          // `CASE 
+          // WHEN ( select friendsId from u_friends_info where friendsId = ${friendId}) = ${friendId}
+          // THEN 
+          // update u_friends_info 
+          // set avatar=${avatar},friendsName=${friendsName},lastMessage=${lastMessage},finalTime=${finalTime},updTime=${updTime}
+          // where friendsId = ${friendId}
+          // ELSE 
+          // INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) 
+          // VALUES (${friendId},${avatar},${friendsName},${lastMessage},${finalTime},${star},${updTime})
+          // END
+          // `,
+          `
+          INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) 
+          VALUES ('${friendId}','${avatar}','${friendsName}','${lastMessage}',${finalTime},${star},${updTime})
+          ON CONFLICT(friendsId) DO UPDATE SET 
+          avatar = '${avatar}', 
+          friendsName = '${friendsName}', 
+          lastMessage = '${lastMessage}', 
+          finalTime = ${finalTime}, 
+          star = ${star}, 
+          updTime = ${updTime};
+          `,
+          []
+          // `IF ( select friendsId from u_friends_info where friendsId = ?) = ?
+          // THEN
+          // update u_friends_info set avatar=?,friendsName=?,lastMessage=?,finalTime=?,updTime=? where friendsId = ?
+          // ELSE
+          // INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) VALUES (?,?,?,?,?,?,?)
+          // `,
+          // [friendId, friendId, avatar,friendsName,lastMessage,finalTime, updTime, friendId, friendId, avatar, friendsName, lastMessage, finalTime, star, updTime]
+        );
+      },
+      error => reject(error),
+      () => {
+        resolve(true);
+      }
+    );
+  });
+}
+
+/**
+ * 查询所有好友列表
+ */
+export function useQueryFriendList(Sqlite: SQLite.WebSQLDatabase) {
+  return new Promise<SQLite.ResultSet[]>((resolve, reject) => {
+    Sqlite.exec(
+      [
+        {
+          sql: `SELECT * FROM  u_friends_info
+            ORDER BY finalTime DESC`,
+          args: [],
+        },
+      ],
+      false,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result as unknown as SQLite.ResultSet[]);
+      }
+    );
+  });
+}
+
+/**
  * 创建单聊对话表
  */
 export async function useCreateSingleChatContent(Sqlite: SQLite.WebSQLDatabase, friendsId: string) {
@@ -52,35 +147,14 @@ export async function useCreateSingleChatContent(Sqlite: SQLite.WebSQLDatabase, 
     error => console.log("创建单聊好友失败", error)
   );
 }
-
-/**
- * 创建好友信息列表
- */
-export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
-  return new Promise((resolve, reject) => {
-    Sqlite.transaction(
-      Db => {
-        Db.executeSql(
-          `CREATE TABLE IF NOT EXISTS u_friends_info (
-          friendsId TEXT PRIMARY KEY ,
-          avatar TEXT NOT NULL,
-          friendsName TEXT NOT NULL,
-          finalStatement TEXT NOT NULL,
-          finalTime TEXT NOT NULL)`
-        );
-      },
-      error => reject(error),
-      () => {
-        resolve(true);
-      }
-    );
-  });
-}
-
 /**
  * 新增单聊好友聊天记录
  */
-export function useAddSingleChatContent(Sqlite: SQLite.WebSQLDatabase, parameter: SingleChatType,friendId:string) {
+export function useAddSingleChatContent(
+  Sqlite: SQLite.WebSQLDatabase,
+  parameter: SingleChatType,
+  friendId: string
+) {
   const { isSender, senderId, recipient, type, content, timeStamp } = parameter;
 
   return new Promise((resolve, reject) => {

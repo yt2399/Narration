@@ -4,9 +4,9 @@ import { useThemeColor } from "../../../hooks/useHooks";
 import { styleAll } from "../../../style";
 import { AntDesign, FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { FriendsItemProps } from "../../../types";
+import { FriendInfoListType, FriendsItemProps } from "../../../types";
 
-const DialogueHead = (friendInfo:FriendsItemProps) => {
+const DialogueHead = (friendInfo:FriendInfoListType) => {
   const backgroundColor = useThemeColor("background");
   const color = useThemeColor("text");
   const Navigation = useNavigation();
@@ -18,7 +18,7 @@ const DialogueHead = (friendInfo:FriendsItemProps) => {
       <View style={[styleAll.center, { height: 70 }]}>
         <AntDesign onPress={Navigation.goBack} name='arrowleft' size={24} color={color} />
         <View style={styles.headTitle}>
-          <Text style={{ ...styles.name, color }}>{friendInfo.nickname}</Text>
+          <Text style={{ ...styles.name, color }}>{friendInfo.friendsName}</Text>
           <Text style={styles.synopsis} numberOfLines={1}>
             生而为人，死而后已111111111111111111111111111111111111111111111
           </Text>

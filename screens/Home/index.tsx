@@ -7,20 +7,28 @@ import { useColorScheme, userAvatar, useThemeColor } from "../../hooks/useHooks"
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
-import { FriendsItemProps, HOME_ENTRANCE, INFO_CODE, MAIL_CODE, ProviderProps } from "../../types";
+import {
+  FriendInfoListType,
+  FriendsItemProps,
+  HOME_ENTRANCE,
+  INFO_CODE,
+  MAIL_CODE,
+  ProviderProps,
+} from "../../types";
 import { messageContentType } from "../../hooks/WebSocketStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRemoveStore } from "../../hooks/useStorage";
-import { setStatusBarStyle, StatusBar } from "expo-status-bar";
-import { Avatar, Badge, Div } from "react-native-magnus";
+import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-status-bar";
+import { Avatar, Badge, Div as Box } from "react-native-magnus";
 import ActionSheet, { ActionSheetRef, SheetProvider } from "react-native-actions-sheet";
+import { useCreateFriendsInfoList, useDeleteSQL, useQueryFriendList } from "../../hooks/useSQLite";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const useColorSchemes = useColorScheme();
-  const [userList, setUserList] = useState<FriendsItemProps[]>([]);
+  const [userList, setUserList] = useState<FriendInfoListType[]>([]);
 
   const ActionSheets = useRef<ActionSheetRef>(null);
 
@@ -31,32 +39,31 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle("inverted");
+      setStatusBarStyle(useColorSchemes);
+      setStatusBarBackgroundColor(color, true);
       store.setCurrentEntrance(HOME_ENTRANCE);
 
       store.setIsActivityIndicator(true);
-
-      console.log(store?.userInfo?.id);
 
       if (!store?.userInfo?.id) {
         // navigation.navigate("Login");
         toast.show("验证失效，请重新登陆");
         return;
       }
-      const { id } = store.userInfo;
 
-      // useDeleteSQL(Sqlite.SqliteState.Sqlite)
+      // Sqlite.SqliteState?.Sqlite && useDeleteSQL(Sqlite.SqliteState?.Sqlite)
       //获取到Info
       if (!store.isConnect) {
         //判断是否连接
-        if (webSocketStore.socketState.isReady) {
+        if (webSocketStore.socketState.isReady && Sqlite.SqliteState.Sqlite) {
           //执行用户信息连接绑定
           webSocketStore.socketState.socket?.send(
             JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
           );
 
           //创建好友基础列表库
-          // Sqlite.SqliteState.Sqlite && useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
+
+          useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
 
           webSocketStore.socketState.socket?.addEventListener("message", e => {
             const { data } = e;
@@ -68,35 +75,33 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             if (messageContent.event === INFO_CODE) {
               store.setIsConnect(true);
             }
-
-            if (messageContent.event === MAIL_CODE) {
-              console.log(messageContent, "home");
-              setUserList(messageContent.data.dataList);
-            }
           });
         }
       }
 
-      if (webSocketStore.socketState.isReady) {
-        webSocketStore.socketState.socket?.send(
-          JSON.stringify({ event: 199, data: { id, type: MAIL_CODE } })
-        );
-        console.log("发送获取通讯录");
+      if (Sqlite.SqliteState.Sqlite) {
+        try {
+          const result = await useQueryFriendList(Sqlite.SqliteState.Sqlite);
+          
+          setUserList(result[0].rows as unknown as FriendInfoListType[]);
+        } catch (error) {
+          console.log(error, "获取好友消息列表失败");
+        }
       }
     });
     return unsubscribe;
   }, [navigation]);
 
-  const closeRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
+  const closeRow = (rowMap: RowMap<FriendInfoListType>, rowKey: string) => {
     if (rowMap[rowKey]) {
       rowMap[rowKey].closeRow();
     }
   };
 
-  const deleteRow = (rowMap: RowMap<FriendsItemProps>, rowKey: string) => {
+  const deleteRow = (rowMap: RowMap<FriendInfoListType>, rowKey: string) => {
     closeRow(rowMap, rowKey);
     const newData = [...userList];
-    const prevIndex = userList.findIndex(item => item.id === rowKey);
+    const prevIndex = userList.findIndex(item => item.friendsId === rowKey);
     newData.splice(prevIndex, 1);
     setUserList(newData);
   };
@@ -107,20 +112,27 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: color }} edges={["top", "right", "left"]}>
-      <StatusBar style={"inverted"} backgroundColor={color} animated={true} />
-
       <View style={[styles.head, styleAll.center, { shadowColor: backgroundColor }]}>
-        <Badge bg='#1bc12e' right={0} top={37} h={10} w={10}>
-          <Avatar
-            source={{
-              uri: userAvatar,
+        <Box alignItems={"center"} flexDir='row' rounded={1}>
+          <Badge bg='#1bc12e' right={0} top={37} h={10} w={10}>
+            <Avatar
+              source={{
+                uri: userAvatar,
+              }}
+            />
+          </Badge>
+          <Text
+            style={{
+              color: backgroundColor,
+              marginLeft: 15,
+              fontSize: 18,
+              fontFamily: "Inter-Black",
             }}
-          />
-        </Badge>
+          >
+            测试名称
+          </Text>
+        </Box>
 
-        <Text style={{ color: backgroundColor, fontSize: 18, fontFamily: "Inter-Black" }}>
-          叙述
-        </Text>
         <TouchableOpacity activeOpacity={0.7} onPress={handleOpenExpression}>
           <AntDesign name='pluscircle' size={24} color={backgroundColor} />
         </TouchableOpacity>
@@ -130,7 +142,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         style={[{ backgroundColor }, styles.DialogueList, styleAll.androidTop]}
         disableRightSwipe
         data={userList}
-        renderItem={({ item }: { item: FriendsItemProps }) => (
+        renderItem={({ item }: { item: FriendInfoListType }) => (
           <TouchableHighlight
             onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
             style={styles.rowFront}
@@ -143,14 +155,14 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             <TouchableOpacity
               activeOpacity={0.7}
               style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
-              onPress={() => closeRow(rowMap, item.id)}
+              onPress={() => closeRow(rowMap, item.friendsId)}
             >
               <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
             </TouchableOpacity>
             <TouchableOpacity
               activeOpacity={0.7}
               style={[styles.backRightBtn, styles.backRightBtnRight]}
-              onPress={() => deleteRow(rowMap, item.id)}
+              onPress={() => deleteRow(rowMap, item.friendsId)}
             >
               <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
             </TouchableOpacity>
@@ -188,9 +200,10 @@ const styles = StyleSheet.create({
   },
   head: {
     width: "100%",
-    height: 50,
+    height: 60,
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 15,
     paddingHorizontal: 20,
     shadowOffset: {
       width: 0,
@@ -238,7 +251,7 @@ const styles = StyleSheet.create({
   DialogueList: {
     width: "100%",
     height: "100%",
-    marginTop: "5%",
+    // marginTop: "5%",
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: "hidden",

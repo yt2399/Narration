@@ -22,7 +22,6 @@ function tabBar<T extends Route>(
       toValue: Width * (((100 / navigationState.routes.length) * navigationState.index) / 100),
       useNativeDriver: false,
     }).start();
-    console.log(setIndex);
   }, [navigationState.index]);
 
   return (

@@ -18,6 +18,7 @@ import { useThemeColor, useWindow, useColorScheme } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import {
   DIALOGUE_ENTRANCE,
+  FriendInfoListType,
   FriendsItemProps,
   ProviderProps,
   SingleChatType,
@@ -31,6 +32,7 @@ import More from "./More";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { messageContentType } from "../../hooks/WebSocketStore";
 import {
+  useAddFriendMsg,
   useAddSingleChatContent,
   useCreateSingleChatContent,
   useQueryDemand,
@@ -134,7 +136,7 @@ const DATA = [
 ];
 
 type paramsType = {
-  friendInfo: FriendsItemProps;
+  friendInfo: FriendInfoListType;
 };
 
 const Height = useWindow("Height");
@@ -195,9 +197,9 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
     //创建单聊对话表
     if (Sqlite.SqliteState.Sqlite) {
-      useCreateSingleChatContent(Sqlite.SqliteState.Sqlite, friendInfo.id);
+      useCreateSingleChatContent(Sqlite.SqliteState.Sqlite, friendInfo.friendsId);
 
-      useQueryDemand(Sqlite.SqliteState.Sqlite, friendInfo.id, 10).then(async () => {
+      useQueryDemand(Sqlite.SqliteState.Sqlite, friendInfo.friendsId, 10).then(async () => {
         try {
           await wait();
         } catch (error) {
@@ -244,14 +246,14 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       setChatData(chatData => [...chatData, content]);
 
       Sqlite.SqliteState.Sqlite &&
-        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
+        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.friendsId);
 
       // await wait();
     }
   };
 
   const wait = () => {
-    const friendsId = friendInfo.id;
+    const friendsId = friendInfo.friendsId;
     return new Promise(resolve => {
       if (Sqlite.SqliteState.Sqlite) {
         limit += 12;
@@ -284,7 +286,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   }
 
   const handleSendChatContent = async () => {
-    const friendsId = friendInfo.id;
+    const friendsId = friendInfo.friendsId;
 
     const now = Math.floor(new Date().getTime() / 1000);
     const content: SingleChatType = {
@@ -304,12 +306,14 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         setValue("");
         scrollToBottom(true);
 
-        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.id);
+        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.friendsId);
         const sendContent = {
           event: 201,
           data: content,
         };
         webSocketStore.socketState.socket.send(JSON.stringify(sendContent));
+        
+        handleSelect({...friendInfo,lastMessage:value});
         return;
       }
       toast.show("发送失败  连接服务器错误");
@@ -317,6 +321,37 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       console.log(error);
 
       toast.show("未知错误");
+    }
+  };
+
+  /**
+   * 更新好友最后一条留言
+   */
+  const handleSelect = async ({
+    friendsId,
+    avatar,
+    friendsName,
+    star,
+    updTime,
+    lastMessage
+  }: FriendInfoListType & { lastMessage: string }) => {
+    const finalTime = Math.floor(new Date().getTime() / 1000);
+    const parameter = {
+      friendsId,
+      avatar,
+      friendsName,
+      lastMessage,
+      finalTime,
+      star,
+      updTime,
+    };
+
+    if (Sqlite.SqliteState.Sqlite) {
+      try {
+        await useAddFriendMsg(Sqlite.SqliteState.Sqlite, parameter, friendsId);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
 

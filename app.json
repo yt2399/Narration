@@ -14,11 +14,7 @@
         }
       ]
     ],
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    "splash": {},
     "updates": {
       "fallbackToCacheTimeout": 0
     },

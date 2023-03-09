@@ -80,7 +80,7 @@ export function post(url: string, data: any, params?: object, headers?: object) 
       url,
       method: "post",
       params, // POST 也可以拼接 url?id=1
-      headers: headers || { "Content-Type": "application/json" },
+      // headers: headers || { "Content-Type": "application/json" },
       data, // POST 请求提交的数据
     })
       .then(result => {
