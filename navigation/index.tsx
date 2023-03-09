@@ -8,7 +8,7 @@ import LinkingConfiguration from "./LinkingConfiguration";
 import Homes from "../screens/Home";
 import Mine from "../screens/Mine";
 import Dialogue from "../screens/Dialogue";
-import { ColorSchemeName, StyleSheet } from "react-native";
+import { ColorSchemeName, StyleSheet, View } from "react-native";
 import Cameras from "../screens/Camera";
 import Login from "../screens/Login";
 import { inject, observer } from "mobx-react";
@@ -21,8 +21,6 @@ import {
 } from "react-native-animated-nav-tab-bar";
 import Colors from "../constants/Colors";
 import FriendsList from "../screens/FriendsList";
-import { Div } from "react-native-magnus";
-
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -132,14 +130,18 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 function HomeRouter() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name='Start' component={StartScreen} options={{ headerShown: false ,gestureEnabled:false}}  />
+      <Stack.Screen
+        name='Start'
+        component={StartScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
       <Stack.Screen
         name='Home'
         component={BottomTabNavigator}
         options={{
           headerShown: false,
           gestureEnabled: false,
-          animationTypeForReplace:"push",
+          animationTypeForReplace: "push",
         }}
       />
       <Stack.Screen
@@ -149,55 +151,54 @@ function HomeRouter() {
         initialParams={{}}
       />
       <Stack.Screen name='Camera' component={Cameras} options={{ headerShown: false }} />
-      <Stack.Screen name='Login' component={LoginScreen} options={{ headerShown: false ,gestureEnabled:false}} />
+      <Stack.Screen
+        name='Login'
+        component={LoginScreen}
+        options={{ headerShown: false, gestureEnabled: false }}
+      />
     </Stack.Navigator>
   );
 }
 
 const styles = StyleSheet.create({
-  tabsStyle:{
-    position:"absolute",
-    width:0,
-    height:0
-  }
-})
+  tabsStyle: {
+    position: "absolute",
+    width: 0,
+    height: 0,
+  },
+});
 const Tabs = AnimatedTabBarNavigator();
 // BottomTab.Navigator 快捷创建底部tab导航栏组件
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const secondaryBack = useThemeColor("secondaryBack");
+  const background = useThemeColor("background");
   return (
-
-      <Tabs.Navigator
+    <Tabs.Navigator
       // default configuration from React Navigation
       appearance={{
         shadow: true,
         // floating: true,
-        tabBarBackground: secondaryBack,
+        tabBarBackground: background,
         dotSize: DotSize["SMALL"],
         dotCornerRadius: 100,
-        
       }}
       initialRouteName='Home'
       tabBarOptions={{
-        activeBackgroundColor: Colors[colorScheme].text,
-        activeTintColor: Colors[colorScheme].line,
-        inactiveTintColor: Colors[colorScheme].text,
-        labelStyle:styles.tabsStyle
-        
+        activeBackgroundColor: background,
+        activeTintColor: Colors[colorScheme].text,
+        inactiveTintColor: "#b8c0d2",
+        labelStyle: styles.tabsStyle,
       }}
     >
       <Tabs.Screen
-        name="消息"
+        name='消息'
         component={HomeScreen}
-        
         options={{
-          tabBarIcon: ({ focused, color, size }: any) => (
-            <Entypo name='chat' size={24} color={color} focused={focused} />
-          ),
-          
+          tabBarIcon: ({ focused, color, size }: any) => {
+            return <Entypo name='chat' size={24} color={color} focused={focused} />;
+          },
         }}
-        
       />
       <Tabs.Screen
         name='好友'
@@ -220,7 +221,5 @@ function BottomTabNavigator() {
         }}
       />
     </Tabs.Navigator>
-    
   );
 }
-

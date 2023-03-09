@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
-import { useColorScheme, useThemeColor } from "../../hooks/useHooks";
+import { useColorScheme, userAvatar, useThemeColor } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
@@ -12,7 +12,7 @@ import { messageContentType } from "../../hooks/WebSocketStore";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRemoveStore } from "../../hooks/useStorage";
 import { setStatusBarStyle, StatusBar } from "expo-status-bar";
-import { Div } from "react-native-magnus";
+import { Avatar, Badge, Div } from "react-native-magnus";
 import ActionSheet, { ActionSheetRef, SheetProvider } from "react-native-actions-sheet";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
@@ -109,8 +109,15 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     <SafeAreaView style={{ flex: 1, backgroundColor: color }} edges={["top", "right", "left"]}>
       <StatusBar style={"inverted"} backgroundColor={color} animated={true} />
 
-      <View style={[styles.head, styleAll.center,{shadowColor: backgroundColor}]}>
-        <AntDesign name='search1' size={24} color={backgroundColor} />
+      <View style={[styles.head, styleAll.center, { shadowColor: backgroundColor }]}>
+        <Badge bg='#1bc12e' right={0} top={37} h={10} w={10}>
+          <Avatar
+            source={{
+              uri: userAvatar,
+            }}
+          />
+        </Badge>
+
         <Text style={{ color: backgroundColor, fontSize: 18, fontFamily: "Inter-Black" }}>
           叙述
         </Text>
@@ -163,12 +170,10 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         containerStyle={{
           height: "40%",
           backgroundColor: secondaryBack,
-          
         }}
         statusBarTranslucent
       >
         <View style={styleAll.MoreHead} />
-        
       </ActionSheet>
     </SafeAreaView>
   );

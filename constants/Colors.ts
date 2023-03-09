@@ -19,7 +19,10 @@ export default {
     tint: tintColorLight,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorLight,
-    line:"#f6f6f6"
+    line:"#f6f6f6",
+    activeColor:"#ffffff",
+    inactiveColor:"#e5e6eb"
+    
   },
   dark: {
     text: "#fff",
@@ -29,7 +32,9 @@ export default {
     tint: tintColorDark,
     tabIconDefault: "#ccc",
     tabIconSelected: tintColorDark,
-    line:"#242424"
+    line:"#242424",
+    activeColor:"#ffffff",
+    inactiveColor:"#e5e6eb"
   },
   emojiDark: {
     backdrop: "#16161888",

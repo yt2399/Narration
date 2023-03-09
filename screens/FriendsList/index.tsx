@@ -1,42 +1,23 @@
-import {
-  StyleSheet,
-  TextInput,
-  useWindowDimensions,
-  View,
-  Text,
-  TouchableOpacity,
-  Animated,
-  PanResponder,
-} from "react-native";
+import { StyleSheet, TextInput, useWindowDimensions, View, Animated } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
-import { ProviderProps } from "../../types";
+import { FriendsItemProps, MAIL_CODE, ProviderProps } from "../../types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useThemeColor, useWindow } from "../../hooks/useHooks";
 import { setStatusBarStyle, StatusBar } from "expo-status-bar";
-import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import { useNavigation } from "@react-navigation/native";
-import {
-  TabView,
-  SceneMap,
-  NavigationState,
-  SceneRendererProps,
-  Route,
-} from "react-native-tab-view";
-import { Div as Box } from "react-native-magnus";
+import { TabView, SceneMap } from "react-native-tab-view";
 
-const all = () => <View style={{ flex: 1, backgroundColor: "#ff4081" }} />;
+import FriendsAll from "./FriendsAll";
+import GroupChat from "./GroupChat";
+import NewFriends from "./NewFriends";
+import StarTarget from "./StarTarget";
+import { messageContentType } from "../../hooks/WebSocketStore";
+import { useToast } from "react-native-toast-notifications";
 
-const groupChat = () => <View style={{ flex: 1, backgroundColor: "#673ab7" }} />;
-const starTarget = () => <View style={{ flex: 1, backgroundColor: "#673ab7" }} />;
-const newFriends = () => <View style={{ flex: 1, backgroundColor: "#673ab7" }} />;
+import TabBar from "../../components/TabBar";
 
-const renderScene = SceneMap({
-  all,
-  groupChat,
-  starTarget,
-  newFriends,
-});
 const Width = useWindow("Width");
 const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const [routes] = React.useState([
@@ -48,18 +29,26 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const navigation = useNavigation();
   const LeftAnim = useRef(new Animated.Value(0)).current;
   const backgroundColor = useThemeColor("background");
-
   const secondaryBack = useThemeColor("secondaryBack");
-
   const threeLevelBack = useThemeColor("threeLevelBack");
-
   const layout = useWindowDimensions();
-
   const [index, setIndex] = React.useState(0);
 
-  const color = useThemeColor("text");
-
   useEffect(() => {
+    if (!store?.userInfo?.id) {
+      // navigation.navigate("Login");
+      Toast.show("验证失效，请重新登陆");
+      return;
+    }
+    const { id } = store.userInfo;
+
+    if (webSocketStore.socketState.isReady) {
+      getFriendsAll();
+
+      webSocketStore.socketState.socket?.send(
+        JSON.stringify({ event: 199, data: { id, type: MAIL_CODE } })
+      );
+    }
     const unsubscribe = navigation.addListener("focus", async () => {
       setStatusBarStyle("auto");
     });
@@ -67,60 +56,34 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     return unsubscribe;
   }, [navigation]);
 
+  const Toast = useToast();
+  const [userList, setUserList] = useState<FriendsItemProps[]>([]);
+
+  const getFriendsAll = () => {
+    webSocketStore.socketState.socket?.addEventListener("message", e => {
+      const { data } = e;
+
+      if (data === "PONG") return;
+
+      const messageContent = JSON.parse(data) as messageContentType;
+
+      if (messageContent.event === MAIL_CODE) {
+        console.log(messageContent, "FriendsList");
+        setUserList(messageContent.data.dataList);
+      }
+    });
+  };
+
   const [value, setValue] = useState<string>();
 
   const handleSendChatContent = () => {
     console.log("触发搜索");
   };
 
-  function tabBar<T extends Route>({
-    navigationState,
-  }: SceneRendererProps & { navigationState: NavigationState<T> }) {
-    useEffect(() => {
-      Animated.spring(LeftAnim, {
-        toValue: Width * (((100 / navigationState.routes.length) * navigationState.index) / 100),
-        useNativeDriver: false,
-      }).start();
-    }, [index]);
-
-    return (
-      <View>
-        <Box w={"100%"} h={40} row style={{ marginTop: 20, marginBottom: 10 }}>
-          {navigationState.routes.map((item, index) => {
-            const opacity = navigationState.index === index ? 1 : 0.5;
-            return (
-              <Box
-                w={`${100 / navigationState.routes.length}%`}
-                h={40}
-                row
-                alignItems='center'
-                justifyContent='center'
-                key={item.key}
-              >
-                <TouchableOpacity style={{ flex: 1 }} onPress={() => setIndex(index)}>
-                  <Text style={[styleAll.font, { opacity, textAlign: "center" }]}>
-                    {item.title}
-                  </Text>
-                </TouchableOpacity>
-              </Box>
-            );
-          })}
-        </Box>
-
-        <Animated.View
-          style={{
-            width: `${100 / navigationState.routes.length - 5}%`,
-            height: 2,
-            marginLeft: "2.5%",
-            backgroundColor: "#000",
-            position: "relative",
-            left: LeftAnim,
-            bottom: 10,
-          }}
-        />
-      </View>
-    );
-  }
+  const all = () => <FriendsAll userList={userList} />;
+  const groupChat = () => <GroupChat />;
+  const starTarget = () => <StarTarget />;
+  const newFriends = () => <NewFriends />;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor }} edges={["top", "right", "left"]}>
@@ -145,19 +108,18 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         />
       </View>
 
-      {/* <View style={styles.addFriends}>
-        <View style={[styles.addFriendsIcon, styleAll.center]}>
-          <FontAwesome5 name='user-friends' size={22} color='#006aff' />
-        </View>
-      </View> */}
-
       <TabView
         navigationState={{ index, routes }}
-        renderScene={renderScene}
+        renderScene={SceneMap({
+          all,
+          groupChat,
+          starTarget,
+          newFriends,
+        })}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
-        lazy
-        renderTabBar={tabBar}
+        renderTabBar={prop => <TabBar {...{ ...prop, setIndex }} />}
+        lazy={true}
       />
     </SafeAreaView>
   );
@@ -193,9 +155,5 @@ const styles = StyleSheet.create({
     borderRadius: 99,
     backgroundColor: "#edf3fc",
     justifyContent: "center",
-  },
-  borderBottom: {
-    borderBottomWidth: 1,
-    borderBottomColor: "#000",
-  },
+  }
 });
