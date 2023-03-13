@@ -2,7 +2,12 @@ import { StyleSheet, TextInput, useWindowDimensions, View, Animated } from "reac
 import React, { useEffect, useRef, useState } from "react";
 import { FriendsItemProps, MAIL_CODE, ProviderProps } from "../../types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useColorScheme, useThemeColor, useWindow } from "../../hooks/useHooks";
+import {
+  useColorScheme,
+  useSetStatusBarBackgroundColor,
+  useThemeColor,
+  useWindow,
+} from "../../hooks/useHooks";
 import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-status-bar";
 import { AntDesign } from "@expo/vector-icons";
 import { styleAll } from "../../style";
@@ -31,13 +36,13 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const layout = useWindowDimensions();
-  const Scheme = useColorScheme();
+  const useColorSchemes = useColorScheme();
   const [index, setIndex] = React.useState(0);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle("dark");
-      setStatusBarBackgroundColor("#fff", true);
+      setStatusBarStyle('auto');
+      useSetStatusBarBackgroundColor('#fff');
     });
 
     return unsubscribe;
@@ -50,8 +55,8 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       return;
     }
     const { id } = store.userInfo;
-    console.log(webSocketStore.socketState.isReady,id);
-    
+    console.log(webSocketStore.socketState.isReady, id);
+
     if (webSocketStore.socketState.isReady) {
       getFriendsAll();
 
@@ -65,17 +70,15 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const [userList, setUserList] = useState<FriendsItemProps[]>([]);
 
   const getFriendsAll = () => {
-
     webSocketStore.socketState.socket?.addEventListener("message", e => {
       const { data } = e;
       console.log(data);
-      
+
       if (data === "PONG") return;
 
       const messageContent = JSON.parse(data) as messageContentType;
 
       if (messageContent.event === MAIL_CODE) {
-
         setUserList(messageContent.data.dataList);
       }
     });
@@ -87,7 +90,7 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     console.log("触发搜索");
   };
 
-  const all = () => <FriendsAll Sqlite={Sqlite.SqliteState.Sqlite} userList={userList}  />;
+  const all = () => <FriendsAll Sqlite={Sqlite.SqliteState.Sqlite} userList={userList} />;
   const groupChat = () => <GroupChat />;
   const starTarget = () => <StarTarget />;
   const newFriends = () => <NewFriends />;
@@ -126,7 +129,7 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
         renderTabBar={prop => <TabBar {...{ ...prop, setIndex }} />}
-        lazy={true}
+        lazy
       />
     </SafeAreaView>
   );

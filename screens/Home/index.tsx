@@ -1,9 +1,14 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
 import { styleAll } from "../../style";
-import { useColorScheme, userAvatar, useThemeColor } from "../../hooks/useHooks";
+import {
+  useColorScheme,
+  userAvatar,
+  useSetStatusBarBackgroundColor,
+  useThemeColor,
+} from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
@@ -39,8 +44,8 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle(useColorSchemes);
-      setStatusBarBackgroundColor(color, true);
+      setStatusBarStyle('inverted');
+      useSetStatusBarBackgroundColor(color);
       store.setCurrentEntrance(HOME_ENTRANCE);
 
       store.setIsActivityIndicator(true);
@@ -82,7 +87,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       if (Sqlite.SqliteState.Sqlite) {
         try {
           const result = await useQueryFriendList(Sqlite.SqliteState.Sqlite);
-          
+
           setUserList(result[0].rows as unknown as FriendInfoListType[]);
         } catch (error) {
           console.log(error, "获取好友消息列表失败");
@@ -134,7 +139,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         </Box>
 
         <TouchableOpacity activeOpacity={0.7} onPress={handleOpenExpression}>
-          <AntDesign name='pluscircle' size={24} color={backgroundColor} />
+          <FontAwesome5 name='stream' size={24} color={backgroundColor} />
         </TouchableOpacity>
       </View>
 

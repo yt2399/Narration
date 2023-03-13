@@ -10,11 +10,11 @@ import {
   KeyboardEvent,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
-import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
-import { useThemeColor, useWindow, useColorScheme } from "../../hooks/useHooks";
+import { useThemeColor, useWindow, useColorScheme, Haptic } from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import {
   DIALOGUE_ENTRANCE,
@@ -141,6 +141,7 @@ type paramsType = {
 
 const Height = useWindow("Height");
 const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
+
   let limit = 0;
 
   const [value, setValue] = useState("");
@@ -158,6 +159,9 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const FlashLists = useRef<FlashList<SingleChatType>>(null);
 
   const navigation = useNavigation();
+
+  const colorSchemes = useColorScheme()
+
   //true:文本输入模式
   //false:语音输入
   const [mode, setMode] = useState(true);
@@ -218,6 +222,8 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     };
   }, []);
 
+  
+
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
       setStatusBarStyle("auto");
@@ -242,7 +248,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         userId: store.userInfo?.id || "",
         ...messageContent.data,
       };
-
+      Haptic()
       setChatData(chatData => [...chatData, content]);
 
       Sqlite.SqliteState.Sqlite &&
@@ -374,7 +380,8 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   };
 
   return (
-    <View style={[{ flex: 1, backgroundColor }, styleAll.iosBottom]}>
+    
+      <View style={[{ flex: 1, backgroundColor }, styleAll.iosBottom]}>
       <StatusBar style='auto' backgroundColor={backgroundColor} animated={true} />
       <MaterialCommunityIcons
         name='keyboard-settings'
@@ -425,6 +432,12 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             onLayout={e => scrollToBottom()}
             ref={FlashLists}
           />
+          
+          {/* {
+            chatData && chatData.map((item)=>{
+              return <DialogueContents avatar={friendInfo.avatar} {...item} />
+            })
+          } */}
         </View>
 
         <View
@@ -498,10 +511,11 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       </KeyboardAvoidingView>
       {/* </KeyboardAvoidingView> */}
     </View>
+    
   );
 };
 
-export default Dialogue;
+export default memo(Dialogue);
 
 const styles = StyleSheet.create({
   DialogueShowMain: {
@@ -537,3 +551,4 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+

@@ -14,7 +14,10 @@
         }
       ]
     ],
-    "splash": {},
+    "splash": {
+      "image": "./assets/backgroundImg/startImg.png",
+      "backgroundColor": "#ffffff"
+    },
     "updates": {
       "fallbackToCacheTimeout": 0
     },

@@ -22,7 +22,6 @@ const FriendsItem = (data: FriendInfoListType) => {
         color='red800'
         shadow={1}
         rounded='lg'
-        style={{borderColor:"#000",borderWidth:1}}
         source={{
           uri: avatar || avatars,
         }}

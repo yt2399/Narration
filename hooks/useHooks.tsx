@@ -1,17 +1,14 @@
-import { ColorSchemeName, Dimensions, useColorScheme as _useColorScheme } from "react-native";
+import {
+  ColorSchemeName,
+  Dimensions,
+  Platform,
+  useColorScheme as _useColorScheme,
+} from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as VideoThumbnails from "expo-video-thumbnails";
 import Colors from "../constants/Colors";
-import * as SQLite from "expo-sqlite";
-import { QueryDemandType, SingleChatType, userDataInfoType } from "../types";
-import { useGetStoreObject } from "./useStorage";
 import * as Haptics from "expo-haptics";
-let SQLiteDb: SQLite.WebSQLDatabase;
-
-useGetStoreObject("userInfo").then(({ id }: userDataInfoType | any) => {
-  SQLiteDb = SQLite.openDatabase(`${id}.db`, "1.0.1");
-});
-
+import { setStatusBarBackgroundColor } from "expo-status-bar";
 
 export const userAvatar =
   "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -19,13 +16,16 @@ export const userAvatar =
 export const avatar2 =
   "https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fblog%2F202106%2F28%2F20210628204020_17863.thumb.1000_0.jpg&refer=http%3A%2F%2Fc-ssl.duitang.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1678716425&t=f557d5986b25451a91c201fb8988107c";
 
-
 // 配色方案
 // useColorScheme值总是浅色或深色的，但是内置的
 // type表示它可以为空。这在实践中是不会发生的，所以
 // 使它更容易使用。
 export function useColorScheme(): NonNullable<ColorSchemeName> {
   return _useColorScheme() as NonNullable<ColorSchemeName>;
+}
+
+export function useSetStatusBarBackgroundColor(color: string) {
+  Platform.OS === "android" && setStatusBarBackgroundColor(color, true);
 }
 
 /**
@@ -124,127 +124,10 @@ export function useByteToString(Byte: Iterable<number>) {
   }
 }
 
-
 /**
- * 初始化一个sql库，如果没有就会创建
+ * 消息提示振动
  */
-
-/**
- * 创建单聊对话表
- */
-export async function useCreateSingleChatContent(friendsId:string) {
-
-  return new Promise((resolve, reject) => {
-    SQLiteDb.transaction(
-      Db => {
-        Db.executeSql(
-          `CREATE TABLE IF NOT EXISTS u_chat_${friendsId} (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        senderId TEXT NOT NULL,
-        recipient TEXT NOT NULL,
-        type TEXT NOT NULL,
-        content TEXT NOT NULL,
-        timeStamp BIGINT NOT NULL)`
-        );
-      },
-      error => reject(error),
-      () => {
-        resolve(true);
-      }
-    );
-  });
-}
-
-/**
- * 创建好友信息列表
- */
-export async function useCreateFriendsInfoList() {
-  // const { id } = (await useGetStoreObject("userInfo")) as unknown as userDataInfoType;
-
-  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${id}.db`, "1.0.1");
-  return new Promise((resolve, reject) => {
-    SQLiteDb.transaction(
-      Db => {
-        Db.executeSql(
-          `CREATE TABLE IF NOT EXISTS u_friends_info (
-        friendsId TEXT PRIMARY KEY ,
-        avatar TEXT NOT NULL,
-        friendsName TEXT NOT NULL,
-        finalStatement TEXT NOT NULL,
-        finalTime TEXT NOT NULL)`
-        );
-      },
-      error => reject(error),
-      () => {
-        resolve(true);
-      }
-    );
-  });
-}
-
-/**
- * 新增单聊好友聊天记录
- */
-export function useAddSingleChatContent(parameter: SingleChatType) {
-  const { senderId, recipient, type, content, timeStamp } = parameter;
-
-  return new Promise((resolve, reject) => {
-    SQLiteDb.transaction(
-      Db => {
-        Db.executeSql(
-          `INSERT INTO u_chat_${recipient} (senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?)`,
-          [senderId, recipient, type, content, timeStamp]
-        );
-      },
-      error => reject(error),
-      () => {
-        resolve(true);
-      }
-    );
-  });
-}
-
-/**
- * 查询单聊记录
- */
-export function useQueryDemand(parameter: QueryDemandType, limit: number) {
-  const { surface, senderId, recipient } = parameter;
-  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${recipient}.db`, "1.0.1");
-
-  return new Promise((resolve, reject) => {
-    SQLiteDb.exec(
-      [
-        {
-          sql: `SELECT * FROM  u_chat_${recipient}
-          WHERE (senderId = ? AND recipient= ?) OR (senderId= ? AND recipient=?)
-          ORDER BY timeStamp DESC
-          LIMIT ${limit} `,
-          args: [senderId, recipient, recipient, senderId],
-        },
-      ],
-      false,
-      (err, result) => {
-        if (err) return reject(err);
-        resolve(result);
-      }
-    );
-  });
-}
-
-/**
- * 删除单个好友数据库
- */
-export async function useDeleteSQL() {
-  // const SQLiteDb: SQLite.WebSQLDatabase = SQLite.openDatabase(`${friendsId}.db`, "1.0.1");
-  SQLiteDb.closeAsync();
-  return await SQLiteDb.deleteAsync();
-}
-
-
-
-
-//手机振动提示
-export const Tips = () => {
+export const Haptic = () => {
   let count = 0;
   let impactAsync = setInterval(() => {
     count++;

@@ -1,11 +1,12 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import { useThemeColor, useThumbnail, useWindow } from "../../../hooks/useHooks";
 import ImageAout from "../../../components/ImageAout";
 import { VideoThumbnailsResult } from "expo-video-thumbnails";
 import { AntDesign } from "@expo/vector-icons";
 import PopupVideo from "../../../components/PopupVideo";
 import ImageView from "react-native-image-viewing";
+import { Popable } from "react-native-popable";
 import { SingleChatType, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
 const width = useWindow("Width");
 
@@ -36,10 +37,16 @@ const DialogueContents = ({
     uri: "",
   });
 
-  useEffect(()=>{
-    console.log(avatar,'头像');
-    
-  },[])
+  const MenuItems = [
+    { text: "Actions", icon: "home", isTitle: true, onPress: () => {} },
+    { text: "Action 1", icon: "edit", onPress: () => {} },
+    { text: "Action 2", icon: "map-pin", withSeparator: true, onPress: () => {} },
+    { text: "Action 3", icon: "trash", isDestructive: true, onPress: () => {} },
+  ];
+
+  useEffect(() => {
+    // console.log(avatar, "头像");
+  }, []);
   const getThumbnail = async (url: string) => {
     const res = await useThumbnail(url);
     setThumbnail(res as VideoThumbnailsResult);
@@ -61,6 +68,7 @@ const DialogueContents = ({
     //   keyboardVerticalOffset={100}
     //   style={{flex:1}}
     // >
+
     <View
       style={{
         ...styles.direction,
@@ -84,31 +92,35 @@ const DialogueContents = ({
           }}
         >
           <View style={!isSender ? styles.triangleLeft : styles.triangleRight}></View>
-          {(type === TYPE_TEXT && (
-            <Text style={{ fontSize: 16 }} numberOfLines={20}>
-              {content}
-            </Text>
-          )) ||
-            (type === TYPE_IMG && (
-              <ImageAout
-                source={{
-                  uri: content,
-                }}
-                style={{ ...styles.ImagesStyle }}
-                Press={() => handleImageView(content)}
-              />
+          
+            {(type === TYPE_TEXT && (
+              <Popable content='See profile' animationType="spring" strictPosition position="bottom">
+              <Text style={{ fontSize: 16 }} numberOfLines={20}>
+                {content}
+              </Text>
+              </Popable>
             )) ||
-            (type === TYPE_VIDEO && (
-              <View onLayout={async () => await getThumbnail(content)}>
-                <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
-                  <Image
-                    source={{ uri: thumbnail.uri }}
-                    style={{ ...styles.ImagesStyle, width: 180, height: 130 }}
-                  />
-                  <AntDesign name='play' size={30} color='#fff' style={styles.play} />
-                </TouchableOpacity>
-              </View>
-            ))}
+              (type === TYPE_IMG && (
+                <ImageAout
+                  source={{
+                    uri: content,
+                  }}
+                  style={{ ...styles.ImagesStyle }}
+                  Press={() => handleImageView(content)}
+                />
+              )) ||
+              (type === TYPE_VIDEO && (
+                <View onLayout={async () => await getThumbnail(content)}>
+                  <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
+                    <Image
+                      source={{ uri: thumbnail.uri }}
+                      style={{ ...styles.ImagesStyle, width: 180, height: 130 }}
+                    />
+                    <AntDesign name='play' size={30} color='#fff' style={styles.play} />
+                  </TouchableOpacity>
+                </View>
+              ))}
+          
         </View>
       </View>
       {visibleTow && <PopupVideo isVisible={setVisibleTow} uri={videoUri} />}
@@ -119,11 +131,10 @@ const DialogueContents = ({
         onRequestClose={() => setVisible(false)}
       />
     </View>
-    // </KeyboardAvoidingView>
   );
 };
 
-export default DialogueContents;
+export default memo(DialogueContents);
 
 const styles = StyleSheet.create({
   direction: {
@@ -134,6 +145,7 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 5,
+    backgroundColor: "#fff",
   },
   content: {
     display: "flex",

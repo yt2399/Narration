@@ -1,7 +1,7 @@
 import { useColorScheme, useThemeColor } from "./hooks/useHooks";
 import { useFonts } from "expo-font";
-import React, { useContext, useEffect } from "react";
-import * as TaskManager from "expo-task-manager";
+import React from "react";
+
 import { Provider } from "mobx-react";
 import webSocketStore from "./hooks/WebSocketStore";
 import store from "./hooks/store";
@@ -10,7 +10,6 @@ import { StatusBar } from "expo-status-bar";
 import { ToastProvider } from "react-native-toast-notifications";
 import Navigation from "./navigation";
 import Loading from "./components/Loading";
-import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemeProvider } from "react-native-magnus";
 
 export default function App() {
@@ -26,18 +25,16 @@ export default function App() {
   }
 
   return (
-    <Provider webSocketStore={webSocketStore} store={store} Sqlite={useSqliteState}>
-
-        {/* 黑夜模式 */}
-        <StatusBar style={"auto"} backgroundColor={backgroundColor} animated={true} />
-        <ThemeProvider>
-          <ToastProvider>
-          <Navigation colorScheme={colorScheme} />
+    <Provider {...{ webSocketStore, store, Sqlite: useSqliteState }}>
+      {/* 黑夜模式 */}
+      <StatusBar style={"auto"} {...{ backgroundColor }} animated={true} />
+      <ThemeProvider>
+        <ToastProvider>
+          <Navigation {...{ colorScheme }} />
         </ToastProvider>
-        </ThemeProvider>
-        
-        {/* {store.isActivityIndicator && <Loading />} */}
+      </ThemeProvider>
 
+      {/* {store.isActivityIndicator && <Loading />} */}
     </Provider>
   );
 }

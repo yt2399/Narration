@@ -26,11 +26,10 @@ export type RootStackParamList = {
   Home: undefined;
   Mine: undefined;
   Camera: undefined;
+  FriendsDetails: { friendInfo: FriendInfoListType };
   NotFound: undefined;
   FriendsList: undefined;
-  Dialogue: {
-    friendInfo: FriendInfoListType;
-  };
+  Dialogue: { friendInfo: FriendInfoListType };
 };
 
 /**
@@ -55,7 +54,7 @@ export interface SingleChatType {
  */
 
 export interface FriendInfoListType {
-  friendsId:string,
+  friendsId: string;
   avatar: string;
   friendsName: string;
   lastMessage: string;
@@ -121,5 +120,5 @@ export type FriendsItemProps = {
   p: number;
   sex: number;
   star: number;
-  updTime:number
+  updTime: number;
 };

@@ -7,6 +7,7 @@ import { Avatar, Div as Box } from "react-native-magnus";
 import { userAvatar, useThemeColor } from "../../../hooks/useHooks";
 import { styleAll } from "../../../style";
 import { useAddFriendMsg } from "../../../hooks/useSQLite";
+import { useNavigation } from "@react-navigation/native";
 
 type FriendsAllProps = {
   userList: FriendsItemProps[];
@@ -15,6 +16,7 @@ type FriendsAllProps = {
 
 const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   const MemoUserList = useMemo(() => userList, []);
+  const Navigation = useNavigation();
   const Line = useThemeColor("line");
   const color = useThemeColor("text");
   // useEffect(() => {
@@ -24,7 +26,7 @@ const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   const handleSelect = async ({ id, avatar, nickname, star, updTime }: FriendsItemProps) => {
     const finalTime = Math.floor(new Date().getTime() / 1000);
     const parameter = {
-      friendsId:id,
+      friendsId: id,
       avatar,
       friendsName: nickname,
       lastMessage: " ",
@@ -32,18 +34,21 @@ const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
       star,
       updTime,
     };
-    console.log(Sqlite);
-    
-    if (Sqlite) {
-      try {
-        await useAddFriendMsg(Sqlite, parameter, id);
-        console.log(111);
-        
-      } catch (error) {
-        console.log(error);
-        
-      }
-    }
+
+    Navigation.navigate("FriendsDetails", { friendInfo: parameter });
+
+    // console.log(Sqlite);
+
+    // if (Sqlite) {
+    //   try {
+    //     await useAddFriendMsg(Sqlite, parameter, id);
+    //     console.log(111);
+
+    //   } catch (error) {
+    //     console.log(error);
+
+    //   }
+    // }
   };
 
   return (

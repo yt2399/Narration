@@ -21,6 +21,7 @@ import {
 } from "react-native-animated-nav-tab-bar";
 import Colors from "../constants/Colors";
 import FriendsList from "../screens/FriendsList";
+import FriendsDetails from "../screens/FriendsDetails";
 
 export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeName }) {
   return (
@@ -39,6 +40,7 @@ type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "
 type DialogueScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Dialogue">;
 type MineScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Mine">;
 type FriendsListNavigationProp = NativeStackNavigationProp<RootStackParamList, "FriendsList">;
+type FriendsDetailsProp = NativeStackNavigationProp<RootStackParamList, "FriendsDetails">;
 
 type StartProps = {
   navigation: StartScreenNavigationProp;
@@ -58,7 +60,9 @@ type MineProps = {
 type FriendsList = {
   navigation: FriendsListNavigationProp;
 };
-
+type FriendsDetails = {
+  navigation: FriendsDetailsProp;
+};
 const StartScreen = inject(
   "webSocketStore",
   "store",
@@ -66,7 +70,7 @@ const StartScreen = inject(
 )(
   observer((props: StartProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <Start webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <Start {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -77,7 +81,7 @@ const HomeScreen = inject(
 )(
   observer((props: HomeProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <Homes webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <Homes {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -88,7 +92,7 @@ const LoginScreen = inject(
 )(
   observer((props: LoginProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <Login webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <Login {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -99,7 +103,7 @@ const DialogueScreen = inject(
 )(
   observer((props: DialogueProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <Dialogue webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <Dialogue {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -110,7 +114,7 @@ const MineScreen = inject(
 )(
   observer((props: MineProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <Mine webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <Mine {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -121,7 +125,18 @@ const FriendsListScreen = inject(
 )(
   observer((props: MineProps) => {
     const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
-    return <FriendsList webSocketStore={webSocketStore} store={store} Sqlite={Sqlite} />;
+    return <FriendsList {...{ webSocketStore, store, Sqlite }} />;
+  })
+);
+
+const FriendsDetailsScreen = inject(
+  "webSocketStore",
+  "store",
+  "Sqlite"
+)(
+  observer((props: MineProps) => {
+    const { webSocketStore, store, Sqlite } = props as unknown as ProviderProps;
+    return <FriendsDetails {...{ webSocketStore, store, Sqlite }} />;
   })
 );
 
@@ -151,6 +166,12 @@ function HomeRouter() {
         initialParams={{}}
       />
       <Stack.Screen name='Camera' component={Cameras} options={{ headerShown: false }} />
+      <Stack.Screen
+        name='FriendsDetails'
+        component={FriendsDetailsScreen}
+        options={{ headerShown: false }}
+        initialParams={{}}
+      />
       <Stack.Screen
         name='Login'
         component={LoginScreen}

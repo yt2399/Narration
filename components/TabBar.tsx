@@ -46,10 +46,13 @@ function tabBar<T extends Route>(
         style={{
           width: `${100 / navigationState.routes.length - 5}%`,
           left: LeftAnim,
-          backgroundColor: color,
+          // backgroundColor: color,
+          ...styleAll.center,
           ...styles.borderBottom,
         }}
-      />
+      >
+        <View style={[styles.dot,{backgroundColor: color,}]}></View>
+        </Animated.View>
     </View>
   );
 }
@@ -57,11 +60,16 @@ function tabBar<T extends Route>(
 const styles = StyleSheet.create({
   borderBottom: {
     position: "relative",
-    bottom: 15,
+    bottom: 30,
     height: 4,
     marginLeft: "2.5%",
-    borderRadius: 10,
+    justifyContent:"center"
   },
+  dot:{
+    width:30,
+    height:4,
+    borderRadius: 10,
+  }
 });
 
 export default tabBar;
