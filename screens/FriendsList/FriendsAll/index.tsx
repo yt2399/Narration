@@ -19,36 +19,22 @@ const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   const Navigation = useNavigation();
   const Line = useThemeColor("line");
   const color = useThemeColor("text");
-  // useEffect(() => {
-  //   // console.log(userLists);
-  // }, []);
 
-  const handleSelect = async ({ id, avatar, nickname, star, updTime }: FriendsItemProps) => {
+
+  const handleSelect = async (FriendsItem: FriendsItemProps) => {
+    console.log();
+
     const finalTime = Math.floor(new Date().getTime() / 1000);
     const parameter = {
-      friendsId: id,
-      avatar,
-      friendsName: nickname,
+      friendsId: FriendsItem.id,
+      friendsName: FriendsItem.nickname,
       lastMessage: " ",
       finalTime,
-      star,
-      updTime,
+      lastMessageCount: 0,
+      ...FriendsItem,
     };
 
     Navigation.navigate("FriendsDetails", { friendInfo: parameter });
-
-    // console.log(Sqlite);
-
-    // if (Sqlite) {
-    //   try {
-    //     await useAddFriendMsg(Sqlite, parameter, id);
-    //     console.log(111);
-
-    //   } catch (error) {
-    //     console.log(error);
-
-    //   }
-    // }
   };
 
   return (

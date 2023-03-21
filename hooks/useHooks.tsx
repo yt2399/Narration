@@ -57,8 +57,8 @@ export const usePickImage = async () => {
   // 启动图片库不需要权限请求
   const { assets } = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
-    allowsEditing: true,
-    aspect: [4, 3],
+    // allowsEditing: true,
+    // aspect: [4, 3],
     quality: 1,
   });
 

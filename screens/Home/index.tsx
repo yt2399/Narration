@@ -1,7 +1,7 @@
 import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { AntDesign, FontAwesome5 } from "@expo/vector-icons";
+import { FontAwesome5 } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import {
   useColorScheme,
@@ -12,20 +12,13 @@ import {
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
 import { useToast } from "react-native-toast-notifications";
-import {
-  FriendInfoListType,
-  FriendsItemProps,
-  HOME_ENTRANCE,
-  INFO_CODE,
-  MAIL_CODE,
-  ProviderProps,
-} from "../../types";
+import { FriendInfoListType, HOME_ENTRANCE, INFO_CODE, ProviderProps } from "../../types";
 import { messageContentType } from "../../hooks/WebSocketStore";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRemoveStore } from "../../hooks/useStorage";
-import { setStatusBarBackgroundColor, setStatusBarStyle, StatusBar } from "expo-status-bar";
+
+import { setStatusBarStyle } from "expo-status-bar";
 import { Avatar, Badge, Div as Box } from "react-native-magnus";
-import ActionSheet, { ActionSheetRef, SheetProvider } from "react-native-actions-sheet";
+import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useCreateFriendsInfoList, useDeleteSQL, useQueryFriendList } from "../../hooks/useSQLite";
 
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
@@ -44,12 +37,11 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle('inverted');
-      useSetStatusBarBackgroundColor(color);
       store.setCurrentEntrance(HOME_ENTRANCE);
-
       store.setIsActivityIndicator(true);
 
+      setStatusBarStyle("inverted");
+      useSetStatusBarBackgroundColor(color);
       if (!store?.userInfo?.id) {
         // navigation.navigate("Login");
         toast.show("验证失效，请重新登陆");
@@ -120,22 +112,9 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       <View style={[styles.head, styleAll.center, { shadowColor: backgroundColor }]}>
         <Box alignItems={"center"} flexDir='row' rounded={1}>
           <Badge bg='#1bc12e' right={0} top={37} h={10} w={10}>
-            <Avatar
-              source={{
-                uri: userAvatar,
-              }}
-            />
+            <Avatar source={{ uri: userAvatar }} />
           </Badge>
-          <Text
-            style={{
-              color: backgroundColor,
-              marginLeft: 15,
-              fontSize: 18,
-              fontFamily: "Inter-Black",
-            }}
-          >
-            测试名称
-          </Text>
+          <Text style={[{ color: backgroundColor }, styles.headName]}>测试名称</Text>
         </Box>
 
         <TouchableOpacity activeOpacity={0.7} onPress={handleOpenExpression}>
@@ -202,6 +181,11 @@ const styles = StyleSheet.create({
   HomeMain: {
     width: "100%",
     height: "100%",
+  },
+  headName: {
+    marginLeft: 15,
+    fontSize: 18,
+    fontFamily: "Inter-Black",
   },
   head: {
     width: "100%",

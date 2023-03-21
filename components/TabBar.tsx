@@ -60,7 +60,7 @@ function tabBar<T extends Route>(
 const styles = StyleSheet.create({
   borderBottom: {
     position: "relative",
-    bottom: 30,
+    bottom: 25,
     height: 4,
     marginLeft: "2.5%",
     justifyContent:"center"

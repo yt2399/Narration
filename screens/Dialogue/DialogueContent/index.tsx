@@ -7,7 +7,9 @@ import { AntDesign } from "@expo/vector-icons";
 import PopupVideo from "../../../components/PopupVideo";
 import ImageView from "react-native-image-viewing";
 import { Popable } from "react-native-popable";
-import { SingleChatType, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
+import { FriendsItemProps, SingleChatType, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
+import { Div as Box } from "react-native-magnus";
+import { useNavigation } from "@react-navigation/native";
 const width = useWindow("Width");
 
 const userAvatar =
@@ -25,11 +27,13 @@ const DialogueContents = ({
   type,
   content,
   timeStamp,
-}: SingleChatType) => {
+  nickname,
+}: SingleChatType & { avatar: string; nickname: string }) => {
   const [visible, setVisible] = useState(false);
   const [visibleTow, setVisibleTow] = useState(false);
   const [imageUri, setImageUri] = useState([{ uri: "" }]);
   const [videoUri, setVideoUri] = useState("");
+  const Navigation = useNavigation();
   //   const color = useThemeColor( 'text');
   const [thumbnail, setThumbnail] = useState<VideoThumbnailsResult>({
     width: 0,
@@ -37,15 +41,8 @@ const DialogueContents = ({
     uri: "",
   });
 
-  const MenuItems = [
-    { text: "Actions", icon: "home", isTitle: true, onPress: () => {} },
-    { text: "Action 1", icon: "edit", onPress: () => {} },
-    { text: "Action 2", icon: "map-pin", withSeparator: true, onPress: () => {} },
-    { text: "Action 3", icon: "trash", isDestructive: true, onPress: () => {} },
-  ];
-
   useEffect(() => {
-    // console.log(avatar, "头像");
+    console.log(avatar, "头像");
   }, []);
   const getThumbnail = async (url: string) => {
     const res = await useThumbnail(url);
@@ -61,6 +58,21 @@ const DialogueContents = ({
     setVideoUri(uri);
     setVisibleTow(true);
   };
+  //暂定不可通过聊天框跳转好友   设计暂定为通过userId获取最新用户信息
+  // const handleSelect = async (FriendsItem: FriendsItemProps) => {
+  //   const finalTime = Math.floor(new Date().getTime() / 1000);
+  //   const parameter = {
+  //     friendsId: userId,
+  //     friendsName: nickname,
+  //     lastMessage: " ",
+  //     finalTime: timeStamp,
+  //     lastMessageCount: 0,
+  //     avatar,
+  //     // ...FriendsItem,
+  //   };
+
+  //   Navigation.navigate("FriendsDetails", { friendInfo: parameter });
+  // };
 
   return (
     // <KeyboardAvoidingView
@@ -92,35 +104,41 @@ const DialogueContents = ({
           }}
         >
           <View style={!isSender ? styles.triangleLeft : styles.triangleRight}></View>
-          
-            {(type === TYPE_TEXT && (
-              <Popable content='See profile' animationType="spring" strictPosition position="bottom">
+
+          {(type === TYPE_TEXT && (
+            <Popable
+              content={<Option />}
+              style={{ width: 200 }}
+              animationType='spring'
+              strictPosition
+              position='bottom'
+              // action="longpress"
+            >
               <Text style={{ fontSize: 16 }} numberOfLines={20}>
                 {content}
               </Text>
-              </Popable>
+            </Popable>
+          )) ||
+            (type === TYPE_IMG && (
+              <ImageAout
+                source={{
+                  uri: content,
+                }}
+                style={{ ...styles.ImagesStyle }}
+                Press={() => handleImageView(content)}
+              />
             )) ||
-              (type === TYPE_IMG && (
-                <ImageAout
-                  source={{
-                    uri: content,
-                  }}
-                  style={{ ...styles.ImagesStyle }}
-                  Press={() => handleImageView(content)}
-                />
-              )) ||
-              (type === TYPE_VIDEO && (
-                <View onLayout={async () => await getThumbnail(content)}>
-                  <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
-                    <Image
-                      source={{ uri: thumbnail.uri }}
-                      style={{ ...styles.ImagesStyle, width: 180, height: 130 }}
-                    />
-                    <AntDesign name='play' size={30} color='#fff' style={styles.play} />
-                  </TouchableOpacity>
-                </View>
-              ))}
-          
+            (type === TYPE_VIDEO && (
+              <View onLayout={async () => await getThumbnail(content)}>
+                <TouchableOpacity activeOpacity={0.7} onPress={() => ChangeVideoVisible(content)}>
+                  <Image
+                    source={{ uri: thumbnail.uri }}
+                    style={{ ...styles.ImagesStyle, width: 180, height: 130 }}
+                  />
+                  <AntDesign name='play' size={30} color='#fff' style={styles.play} />
+                </TouchableOpacity>
+              </View>
+            ))}
         </View>
       </View>
       {visibleTow && <PopupVideo isVisible={setVisibleTow} uri={videoUri} />}
@@ -131,6 +149,23 @@ const DialogueContents = ({
         onRequestClose={() => setVisible(false)}
       />
     </View>
+  );
+};
+
+const Option = () => {
+  const MenuItems = [
+    { text: "复制", icon: "home", isTitle: true, onPress: () => {} },
+    { text: "撤回", icon: "edit", onPress: () => {} },
+    { text: "收藏", icon: "map-pin", withSeparator: true, onPress: () => {} },
+    { text: "删除", icon: "trash", isDestructive: true, onPress: () => {} },
+  ];
+
+  return (
+    <Box justifyContent='center' alignItems='center' row w={200}>
+      {MenuItems.map(item => (
+        <Text style={{ color: "#Fff", padding: 10 }}>{item.text}</Text>
+      ))}
+    </Box>
   );
 };
 
@@ -202,5 +237,8 @@ const styles = StyleSheet.create({
     top: "40%",
     left: "45%",
     // transform: [{ translateX: "-50%" }],
+  },
+  OptionText: {
+    color: "#fff",
   },
 });

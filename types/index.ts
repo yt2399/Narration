@@ -58,6 +58,8 @@ export interface FriendInfoListType {
   avatar: string;
   friendsName: string;
   lastMessage: string;
+  lastMessageCount:number;
+  // msgType: typeof TYPE_TEXT | typeof TYPE_IMG | typeof TYPE_AUDIO | typeof TYPE_VIDEO
   finalTime: number;
   star: number;
   updTime: number;

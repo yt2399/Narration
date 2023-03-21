@@ -1,62 +1,473 @@
-
-
-[
-    {
-        "type": "SEND_TO_ONE_REQUEST",
-        "body": {
-            "type": "text || img || voice", // 发送的数据类型
-            "userId": 9,
-            "toUser": 13,
-            // 文本
-            "content": {
-                "text": "哈喽"
+{
+    "success": true,
+    "code": 200,
+    "msg": "请求成功",
+    "data": {
+        "customerInfoFilter": {
+            "saleTeam": [
+                {
+                    "name": "自销",
+                    "val": "自销"
+                },
+                {
+                    "name": "代理",
+                    "val": "代理"
+                }
+            ],
+            "using": [
+                {
+                    "val": "半投资半自住",
+                    "name": "半投资半自住"
+                },
+                {
+                    "val": "投资",
+                    "name": "投资"
+                },
+                {
+                    "val": "自住",
+                    "name": "自住"
+                }
+            ],
+            "acceptedfloor": [
+                {
+                    "name": "10楼以下",
+                    "val": "10楼以下"
+                },
+                {
+                    "name": "10-15楼",
+                    "val": "10-15楼"
+                },
+                {
+                    "name": "15-20楼",
+                    "val": "15-20楼"
+                },
+                {
+                    "name": "20-25楼",
+                    "val": "20-25楼"
+                },
+                {
+                    "name": "25楼以上",
+                    "val": "25楼以上"
+                },
+                {
+                    "name": "上叠",
+                    "val": "上叠"
+                },
+                {
+                    "name": "下叠",
+                    "val": "下叠"
+                }
+            ],
+            "worktype": [
+                {
+                    "val": "其他",
+                    "name": "其他"
+                },
+                {
+                    "val": "文体娱乐业",
+                    "name": "文体娱乐业"
+                },
+                {
+                    "val": "高科技产业",
+                    "name": "高科技产业"
+                },
+                {
+                    "val": "文教事业",
+                    "name": "文教事业"
+                },
+                {
+                    "val": "IT及电信业",
+                    "name": "IT及电信业"
+                },
+                {
+                    "val": "医师律师",
+                    "name": "医师律师"
+                },
+                {
+                    "val": "国家机关",
+                    "name": "国家机关"
+                },
+                {
+                    "val": "自由业",
+                    "name": "自由业"
+                },
+                {
+                    "val": "金融保险业",
+                    "name": "金融保险业"
+                },
+                {
+                    "val": "制造业",
+                    "name": "制造业"
+                },
+                {
+                    "val": "金融行业",
+                    "name": "金融行业"
+                },
+                {
+                    "val": "新会站工作员",
+                    "name": "新会站工作员"
+                },
+                {
+                    "val": "建筑业",
+                    "name": "建筑业"
+                },
+                {
+                    "val": "服务业",
+                    "name": "服务业"
+                },
+                {
+                    "val": "电子",
+                    "name": "电子"
+                },
+                {
+                    "val": "金融",
+                    "name": "金融"
+                },
+                {
+                    "val": "房地产",
+                    "name": "房地产"
+                },
+                {
+                    "val": "信息产业",
+                    "name": "信息产业"
+                }
+            ],
+            "recognitionfactor": [],
+            "typewisheids": [
+                {
+                    "val": "必买",
+                    "name": "必买"
+                },
+                {
+                    "val": "高",
+                    "name": "高"
+                },
+                {
+                    "val": "一般",
+                    "name": "一般"
+                },
+                {
+                    "val": "无",
+                    "name": "无"
+                }
+            ],
+            "customerLevel": [
+                {
+                    "name": "A",
+                    "val": "A"
+                },
+                {
+                    "name": "B",
+                    "val": "B"
+                },
+                {
+                    "name": "C",
+                    "val": "C"
+                },
+                {
+                    "name": "D",
+                    "val": "D"
+                },
+                {
+                    "name": "认筹",
+                    "val": "认筹"
+                },
+                {
+                    "name": "旧客户",
+                    "val": "旧客户"
+                },
+                {
+                    "name": "业主",
+                    "val": "业主"
+                }
+            ],
+            "existingHouse": [
+                {
+                    "name": "0",
+                    "val": "0"
+                },
+                {
+                    "name": "1",
+                    "val": "1"
+                },
+                {
+                    "name": "2",
+                    "val": "2"
+                },
+                {
+                    "name": "3",
+                    "val": "3"
+                },
+                {
+                    "name": "3套以上",
+                    "val": "3套以上"
+                }
+            ],
+            "acceptedPrice": [
+                {
+                    "name": "14000-16000",
+                    "val": "14000-16000"
+                },
+                {
+                    "name": "16000-17000",
+                    "val": "16000-17000"
+                },
+                {
+                    "name": "17000-19000",
+                    "val": "17000-19000"
+                },
+                {
+                    "name": "19000-21000",
+                    "val": "19000-21000"
+                },
+                {
+                    "name": "21000-23000",
+                    "val": "21000-23000"
+                },
+                {
+                    "name": "23000-25000",
+                    "val": "23000-25000"
+                },
+                {
+                    "name": "25000-30000",
+                    "val": "25000-30000"
+                },
+                {
+                    "name": "30000以上",
+                    "val": "30000以上"
+                }
+            ],
+            "areawish": [
+                {
+                    "val": "叠墅",
+                    "name": "叠墅"
+                },
+                {
+                    "val": "142",
+                    "name": "142"
+                },
+                {
+                    "val": "99/118",
+                    "name": "99/118"
+                },
+                {
+                    "val": "88/99",
+                    "name": "88/99"
+                }
+            ],
+            "customerConcerns": [
+                {
+                    "name": "地铁",
+                    "val": "地铁"
+                },
+                {
+                    "name": "三轨交汇",
+                    "val": "三轨交汇"
+                },
+                {
+                    "name": "价格",
+                    "val": "价格"
+                },
+                {
+                    "name": "产品户型",
+                    "val": "产品户型"
+                },
+                {
+                    "name": "地段",
+                    "val": "地段"
+                },
+                {
+                    "name": "学校",
+                    "val": "学校"
+                },
+                {
+                    "name": "噪音",
+                    "val": "噪音"
+                },
+                {
+                    "name": "交付时间",
+                    "val": "交付时间"
+                },
+                {
+                    "name": "园林景观",
+                    "val": "园林景观"
+                },
+                {
+                    "name": "其他",
+                    "val": "其他"
+                }
+            ],
+            "marriage": [
+                {
+                    "val": "未婚",
+                    "name": "未婚"
+                },
+                {
+                    "val": "已婚",
+                    "name": "已婚"
+                },
+                {
+                    "val": "未婚",
+                    "name": "未婚"
+                },
+                {
+                    "val": "已婚",
+                    "name": "已婚"
+                }
+            ],
+            "paymentBudget": [
+                {
+                    "name": "2成",
+                    "val": "2成"
+                },
+                {
+                    "name": "3成",
+                    "val": "3成"
+                },
+                {
+                    "name": "4成",
+                    "val": "4成"
+                },
+                {
+                    "name": "5成以上",
+                    "val": "5成以上"
+                },
+                {
+                    "name": "全款",
+                    "val": "全款"
+                }
+            ],
+            "ages": [
+                {
+                    "val": "50以上",
+                    "name": "50以上"
+                },
+                {
+                    "val": "40-50",
+                    "name": "40-50"
+                },
+                {
+                    "val": "30-40",
+                    "name": "30-40"
+                },
+                {
+                    "val": "20-30",
+                    "name": "20-30"
+                }
+            ],
+            "family": [
+                {
+                    "val": "夕阳之家",
+                    "name": "夕阳之家"
+                },
+                {
+                    "val": "二胎家庭",
+                    "name": "二胎家庭"
+                },
+                {
+                    "val": "三代同堂",
+                    "name": "三代同堂"
+                },
+                {
+                    "val": "一家三口（小孩8岁以上）",
+                    "name": "一家三口（小孩8岁以上）"
+                },
+                {
+                    "val": "一家三口（小孩8岁以下）",
+                    "name": "一家三口（小孩8岁以下）"
+                },
+                {
+                    "val": "青年夫妻",
+                    "name": "青年夫妻"
+                },
+                {
+                    "val": "单身贵族",
+                    "name": "单身贵族"
+                }
+            ],
+            "customerResistance": [
+                {
+                    "name": "价格",
+                    "val": "价格"
+                },
+                {
+                    "name": "噪音",
+                    "val": "噪音"
+                },
+                {
+                    "name": "交付时间",
+                    "val": "交付时间"
+                },
+                {
+                    "name": "月供",
+                    "val": "月供"
+                },
+                {
+                    "name": "无样板房",
+                    "val": "无样板房"
+                },
+                {
+                    "name": "暂无",
+                    "val": "暂无"
+                },
+                {
+                    "name": "其他",
+                    "val": "其他"
+                }
+            ]
+        },
+        "followType": {
+            "followType": [
+                {
+                    "name": "来访",
+                    "val": 1
+                },
+                {
+                    "name": "来电",
+                    "val": 2
+                },
+                {
+                    "name": "去电",
+                    "val": 3
+                },
+                {
+                    "name": "主动拜访",
+                    "val": 4
+                },
+                {
+                    "name": "微信",
+                    "val": 7
+                },
+                {
+                    "name": "企业微信",
+                    "val": 6
+                },
+                {
+                    "name": "其它",
+                    "val": 5
+                }
+            ]
+        },
+        "config": {
+            "banner": {
+                "configName": "banner",
+                "configKey": "banner",
+                "val": [
+                    "http://cloud-marketing-test.oss-cn-shanghai.aliyuncs.com/img/2022/3/25/27c4cdb0e6ff405a87dacffa6e8d8b86/banner3321.png",
+                    "http://cloud-marketing-test.oss-cn-shanghai.aliyuncs.com/img/2022/3/25/27c4cdb0e6ff405a87dacffa6e8d8b86/banner3321.png"
+                ]
             },
-            "content":{
-                "url": "blob:http://localhost:8080/49d68e6f-6f2a-4d06-9fd4-ec606e79d1c8",
-                "w": 200, // 宽度
-                "h": 200 // 高度
+            "user_bg": {
+                "configName": "user_bg",
+                "configKey": "user_bg",
+                "val": "https://cloud-marketing-test.oss-cn-shanghai.aliyuncs.com/img/com/%E4%B8%AA%E4%BA%BA%E4%B8%AD%E5%BF%83.png"
             },
-            // 语音
-            "content": {
-                "url": "_doc/uniapp_temp_1603265466159/recorder/1603265603072.mp3",
-                "length": "00:06" // 时长
+            "login_bg": {
+                "configName": "login_bg",
+                "configKey": "login_bg",
+                "val": "http://cloud-marketing-test.oss-cn-shanghai.aliyuncs.com/img/2022/3/22/129947c10a324cd6b17e387f88c163ea/%E5%A4%A7%E5%8D%8E%E9%9B%86%E5%9B%A2LOGO.png"
             }
-        }
+        },
+        "isHidden": 1
     }
-]
-
-
-// 返回私聊消息列表
-
-[
-    {
-        "type":"SEND_TO_USER_REQUEST",
-        "body":{
-            // 文本
-            "type": "text",
-            "content":{
-                "text":"测试"
-            },
-            // 图片
-            "type": "img",
-            "content":{
-                "url":"blob:http://localhost:8080/49d68e6f-6f2a-4d06-9fd4-ec606e79d1c8",
-                "w":200,
-                "h":200,
-            },
-            // 语音
-            "type": "voice",
-            "content":{
-                "url": "_doc/uniapp_temp_1603265466159/recorder/1603265603072.mp3",	
-                "length": "00:06"	// 时长
-            },
-            "createTime":1603264147696,
-            "toUser":"TQL",
-            "toUserId":13,
-            "toUserImg":"http://39.99.156.255:8080/CircleChat/img/5993d7c4-8a22-4a4e-a2a5-ebacd0b0b278.jpeg",
-            "userId":9,
-            "userImg":"http://39.99.156.255:8080/CircleChat/img/a274f203-ea22-4594-be31-7449c3e52bca.jpeg",
-            "username":"LiRyan"
-        }
-    }
-]
+}

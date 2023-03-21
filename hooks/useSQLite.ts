@@ -43,6 +43,7 @@ export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
           avatar TEXT NOT NULL,
           friendsName TEXT NOT NULL,
           lastMessage TEXT NOT NULL,
+          lastMessageCount INT NOT NULL,
           finalTime INT NOT NULL,
           star INT NOT NULL,
           updTime INT NOT NULL
@@ -59,42 +60,25 @@ export function useAddFriendMsg(
   parameter: FriendInfoListType,
   friendId: string
 ) {
-  const { avatar, friendsName, lastMessage, finalTime, star, updTime } = parameter;
+  const { avatar, friendsName, lastMessage, finalTime, star, updTime ,lastMessageCount} = parameter;
 
   return new Promise((resolve, reject) => {
     Sqlite.transaction(
       Db => {
         Db.executeSql(
-          // `CASE 
-          // WHEN ( select friendsId from u_friends_info where friendsId = ${friendId}) = ${friendId}
-          // THEN 
-          // update u_friends_info 
-          // set avatar=${avatar},friendsName=${friendsName},lastMessage=${lastMessage},finalTime=${finalTime},updTime=${updTime}
-          // where friendsId = ${friendId}
-          // ELSE 
-          // INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) 
-          // VALUES (${friendId},${avatar},${friendsName},${lastMessage},${finalTime},${star},${updTime})
-          // END
-          // `,
           `
-          INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) 
-          VALUES ('${friendId}','${avatar}','${friendsName}','${lastMessage}',${finalTime},${star},${updTime})
+          INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime,lastMessageCount) 
+          VALUES ('${friendId}','${avatar}','${friendsName}','${lastMessage}',${finalTime},${star},${updTime},${lastMessageCount})
           ON CONFLICT(friendsId) DO UPDATE SET 
           avatar = '${avatar}', 
           friendsName = '${friendsName}', 
           lastMessage = '${lastMessage}', 
+          lastMessageCount = '${lastMessageCount}',
           finalTime = ${finalTime}, 
           star = ${star}, 
           updTime = ${updTime};
           `,
           []
-          // `IF ( select friendsId from u_friends_info where friendsId = ?) = ?
-          // THEN
-          // update u_friends_info set avatar=?,friendsName=?,lastMessage=?,finalTime=?,updTime=? where friendsId = ?
-          // ELSE
-          // INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime) VALUES (?,?,?,?,?,?,?)
-          // `,
-          // [friendId, friendId, avatar,friendsName,lastMessage,finalTime, updTime, friendId, friendId, avatar, friendsName, lastMessage, finalTime, star, updTime]
         );
       },
       error => reject(error),
@@ -167,6 +151,7 @@ export function useAddSingleChatContent(
       },
       error => reject(error),
       () => {
+
         resolve(true);
       }
     );
