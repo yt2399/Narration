@@ -3027,9 +3027,9 @@ dag-map@~1.0.0:
   resolved "https://registry.npmmirror.com/dag-map/-/dag-map-1.0.2.tgz"
   integrity sha512-+LSAiGFwQ9dRnRdOeaj7g47ZFJcOUPukAP8J3A3fuZ1g9Y44BG+P1sgApjLXTQPOzC4+7S9Wr8kXsfpINM4jpw==
 
-dayjs@^1.8.15:
+dayjs@^1.11.7, dayjs@^1.8.15:
   version "1.11.7"
-  resolved "https://registry.npmmirror.com/dayjs/-/dayjs-1.11.7.tgz"
+  resolved "https://registry.npmmirror.com/dayjs/-/dayjs-1.11.7.tgz#4b296922642f70999544d1144a2c25730fce63e2"
   integrity sha512-+Yw9U6YO5TQohxLcIkrXBeY73WP3ejHWVvx8XCk3gxvQDCTEmS48ZrSZCKciI7Bhl/uCMyxYtE9UqRILmFphkQ==
 
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
@@ -5745,7 +5745,7 @@ prompts@^2.3.2, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@15.8.1, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.0:
+prop-types@15.8.1, prop-types@^15.6.2, prop-types@^15.7.2:
   version "15.8.1"
   resolved "https://registry.npmmirror.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -5904,13 +5904,6 @@ react-native-gradle-plugin@^0.70.3:
   version "0.70.3"
   resolved "https://registry.npmmirror.com/react-native-gradle-plugin/-/react-native-gradle-plugin-0.70.3.tgz"
   integrity sha512-oOanj84fJEXUg9FoEAQomA8ISG+DVIrTZ3qF7m69VQUJyOGYyDZmPqKcjvRku4KXlEH6hWO9i4ACLzNBh8gC0A==
-
-react-native-image-progress@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.npmmirror.com/react-native-image-progress/-/react-native-image-progress-1.2.0.tgz#81ff1b33e33c541764b9e4aebfa17b1c1a108d04"
-  integrity sha512-RkQydqw3p0i30vHRFFhuGNT/BXWUDJtBR5/hxJbQsfI/Ziipjm5M64bpw3VQqxUcZC8HLLg+ZQtBq1mtUlWjww==
-  dependencies:
-    prop-types "^15.8.0"
 
 react-native-image-viewing@^0.2.2:
   version "0.2.2"

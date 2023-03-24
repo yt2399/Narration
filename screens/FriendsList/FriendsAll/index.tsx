@@ -4,7 +4,7 @@ import { FriendsItemProps } from "../../../types";
 import * as SQLite from "expo-sqlite";
 import { FlashList } from "@shopify/flash-list";
 import { Avatar, Div as Box } from "react-native-magnus";
-import { userAvatar, useThemeColor } from "../../../hooks/useHooks";
+import { useCurrentTimeStamp, userAvatar, useThemeColor } from "../../../hooks/useHooks";
 import { styleAll } from "../../../style";
 import { useAddFriendMsg } from "../../../hooks/useSQLite";
 import { useNavigation } from "@react-navigation/native";
@@ -22,9 +22,8 @@ const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
 
 
   const handleSelect = async (FriendsItem: FriendsItemProps) => {
-    console.log();
 
-    const finalTime = Math.floor(new Date().getTime() / 1000);
+    const finalTime = useCurrentTimeStamp()
     const parameter = {
       friendsId: FriendsItem.id,
       friendsName: FriendsItem.nickname,

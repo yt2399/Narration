@@ -9,6 +9,12 @@ import * as VideoThumbnails from "expo-video-thumbnails";
 import Colors from "../constants/Colors";
 import * as Haptics from "expo-haptics";
 import { setStatusBarBackgroundColor } from "expo-status-bar";
+import dayjs from "dayjs";
+import { Https } from "../api";
+import { UploadFileType, uploadUrl } from "../api/apiType";
+import * as FileSystem from "expo-file-system";
+import { ActionSheetRef } from "react-native-actions-sheet";
+import { ToastType } from "react-native-toast-notifications";
 
 export const userAvatar =
   "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -57,8 +63,7 @@ export const usePickImage = async () => {
   // 启动图片库不需要权限请求
   const { assets } = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ImagePicker.MediaTypeOptions.All,
-    // allowsEditing: true,
-    // aspect: [4, 3],
+    base64: true,
     quality: 1,
   });
 
@@ -75,54 +80,16 @@ export const useCamera = async () => {
  */
 export const useThumbnail = async (url: string) => {
   try {
-    const res = await VideoThumbnails.getThumbnailAsync(url, {
+    const videoThumbnailsResult = await VideoThumbnails.getThumbnailAsync(url, {
       time: 3000,
       quality: 1,
     });
 
-    return res;
+    return videoThumbnailsResult;
   } catch (e) {
     console.error(e);
   }
 };
-
-/**
- * 将string转为二进制字节
- * @param str string
- */
-export function useStringToBytes(str: string) {
-  var ch,
-    st,
-    re: any[] = [];
-  for (var i = 0; i < str.length; i++) {
-    ch = str.charCodeAt(i);
-    st = [];
-    do {
-      st.push(ch & 0xff);
-      ch = ch >> 8;
-    } while (ch);
-    re = re.concat(st.reverse());
-  }
-  return re;
-}
-
-/**
- * 将二进制字节转为可读的数组
- * @param Byte 二进制数组
- */
-export function useByteToString(Byte: Iterable<number>) {
-  try {
-    let binaryArray = new Uint8Array(Byte);
-    let decoder = new TextDecoder();
-    let text = decoder.decode(binaryArray);
-
-    text = decodeURI(text);
-    console.log(text, "text");
-    return JSON.parse(text);
-  } catch (error) {
-    console.error(error, "转string错误");
-  }
-}
 
 /**
  * 消息提示振动
@@ -137,4 +104,127 @@ export const Haptic = () => {
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
   }, 100);
+};
+
+const fileTypes = {
+  image: 2,
+  audio: 3,
+  video: 4,
+};
+
+export const getUploadFileUrl = async (body: UploadFileType) => {
+  const { fileName, fileType } = body;
+
+  const result = await Https.getUploadFileUrl({
+    fileName,
+    fileType: fileTypes[fileType],
+  });
+
+  return result;
+};
+
+/**
+ * 获取当前时间戳 (秒)
+ */
+export const useCurrentTimeStamp = () => {
+  return dayjs(dayjs()).unix();
+};
+
+/**
+ * 根据当前时间戳(秒) 转换为可视时间
+ * @param timeStamp 转换的时间戳
+ */
+export const useTimeStampToVisualTime = (timeStamp: number) => {
+  //获取当前时间day对象
+  const currentTime = dayjs(dayjs());
+
+  //获取记录时间day对象
+  const logTimeStamp = dayjs(dayjs.unix(timeStamp));
+
+  //对比 当前时间 / 记录时间 的差异(分钟)
+  const differenceS = currentTime.diff(logTimeStamp, "s");
+
+  //对比 当前时间 / 记录时间 的差异(分钟)
+  const differenceM = currentTime.diff(logTimeStamp, "m");
+
+  //获取当前时间日期
+  const currentDate = currentTime.format("YYYY/MM/DD");
+
+  //获取记录时间日期
+  const logDate = logTimeStamp.format("YYYY/MM/DD");
+
+  //当前日期和记录日期不匹配
+  if (currentDate !== logDate) {
+    const newLogTimeStamp = dayjs(logTimeStamp).add(1, "day");
+    const newLogDate = newLogTimeStamp.format("YYYY/MM/DD");
+
+    console.log(newLogDate);
+
+    if (currentDate === newLogDate) {
+      return "昨天" + logTimeStamp.format("HH:MM");
+    }
+
+    return logTimeStamp.format("MM月DD日");
+  }
+
+  if (differenceS < 60) {
+    return differenceS + "秒前";
+  }
+
+  if (differenceM < 30) {
+    return differenceM + "分钟前";
+  }
+
+  return logTimeStamp.format("HH:MM");
+};
+
+export const useUploadImg = async (
+  hidden: ActionSheetRef,
+  ImagePickerAsset: ImagePicker.ImagePickerAsset[],
+  toast: ToastType
+) => {
+  const one = 0;
+  const maxM = 50 * 1024 * 1024;
+  hidden && hidden.hide();
+  const { type, uri, fileSize, base64 } = ImagePickerAsset[one];
+  //校验文件
+  if (fileSize && fileSize > maxM && !type) {
+    toast.show(fileSize > maxM ? "上传视频超过50M 已取消" : "上传视频大小未知 已取消", {
+      placement: "top",
+    });
+    return;
+  }
+
+  if (type) {
+    let newBase64: string = "";
+    const fileName = uri.split("/").pop() as string;
+    if (!base64) {
+      newBase64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+    }
+
+    const bytes = new Uint8Array(
+      atob(base64 || newBase64)
+        .split("")
+        .map(char => char.charCodeAt(0))
+    );
+
+    const response = await fetch(uri);
+    const Blob = await response.blob();
+
+    try {
+      const { code, dataUrl, putUrl }: uploadUrl = await getUploadFileUrl({
+        fileName,
+        fileType: type,
+      });
+
+      if (code === 200) {
+        await Https.UploadFile({ UploadUrl: putUrl, Files: bytes, ContentType: Blob.type });
+        return dataUrl;
+      }
+    } catch (error) {
+      return undefined;
+    }
+  }
 };

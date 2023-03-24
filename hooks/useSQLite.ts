@@ -40,6 +40,7 @@ export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
     Db.executeSql(
       `CREATE TABLE IF NOT EXISTS u_friends_info (
           friendsId TEXT PRIMARY KEY ,
+          isSingleChat INT NOT NULL,
           avatar TEXT NOT NULL,
           friendsName TEXT NOT NULL,
           lastMessage TEXT NOT NULL,
@@ -60,7 +61,8 @@ export function useAddFriendMsg(
   parameter: FriendInfoListType,
   friendId: string
 ) {
-  const { avatar, friendsName, lastMessage, finalTime, star, updTime ,lastMessageCount} = parameter;
+  const { avatar, friendsName, lastMessage, finalTime, star, updTime, lastMessageCount } =
+    parameter;
 
   return new Promise((resolve, reject) => {
     Sqlite.transaction(
@@ -112,7 +114,8 @@ export function useQueryFriendList(Sqlite: SQLite.WebSQLDatabase) {
 }
 
 /**
- * 创建单聊对话表
+ * 创建单聊/群聊对话表
+ * 
  */
 export async function useCreateSingleChatContent(Sqlite: SQLite.WebSQLDatabase, friendsId: string) {
   Sqlite.transaction(
@@ -120,11 +123,15 @@ export async function useCreateSingleChatContent(Sqlite: SQLite.WebSQLDatabase, 
       Db.executeSql(
         `CREATE TABLE IF NOT EXISTS u_chat_${friendsId} (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+          nickname TEXT NOT NULL,
+          avatar TEXT,
+          isSingleChat INT NOT NULL,
           isSender INT NOT NULL,
           senderId TEXT NOT NULL,
           recipient TEXT NOT NULL,
           type INT NOT NULL,
           content TEXT NOT NULL,
+          isSuccess INT NOT NULL,
           timeStamp BIGINT NOT NULL)`
       );
     },
@@ -139,19 +146,23 @@ export function useAddSingleChatContent(
   parameter: SingleChatType,
   friendId: string
 ) {
-  const { isSender, senderId, recipient, type, content, timeStamp } = parameter;
+  const { nickname, avatar,isSingleChat, isSender, senderId, recipient, type, content, isSuccess, timeStamp } =
+    parameter;
 
   return new Promise((resolve, reject) => {
     Sqlite.transaction(
       Db => {
         Db.executeSql(
-          `INSERT INTO u_chat_${friendId} (isSender,senderId,recipient,type,content,timeStamp) VALUES (?,?,?,?,?,?)`,
-          [isSender, senderId, recipient, type, content, timeStamp]
+          `INSERT INTO u_chat_${friendId} (
+            nickname,avatar,isSingleChat,
+            isSender,senderId,recipient,
+            type,content,isSuccess,timeStamp
+            ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
+          [nickname, avatar,isSingleChat, isSender, senderId, recipient, type, content, isSuccess, timeStamp]
         );
       },
       error => reject(error),
       () => {
-
         resolve(true);
       }
     );
@@ -162,6 +173,33 @@ export function useAddSingleChatContent(
  * 查询单聊记录
  */
 export function useQueryDemand(Sqlite: SQLite.WebSQLDatabase, friendId: string, limit: number) {
+  return new Promise((resolve, reject) => {
+    Sqlite.exec(
+      [
+        {
+          sql: `SELECT * FROM  u_chat_${friendId}
+            ORDER BY id DESC
+            LIMIT ${limit} `,
+          args: [],
+        },
+      ],
+      false,
+      (err, result) => {
+        if (err) return reject(err);
+        resolve(result);
+      }
+    );
+  });
+}
+
+/**
+ * 更新单聊聊天记录
+ */
+export function useUpdataSingleChatContent(
+  Sqlite: SQLite.WebSQLDatabase,
+  friendId: string,
+  limit: number
+) {
   return new Promise((resolve, reject) => {
     Sqlite.exec(
       [

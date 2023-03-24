@@ -8,15 +8,24 @@ import {
   RefreshControl,
   Keyboard,
   KeyboardEvent,
+  Text,
 } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { AntDesign, Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import DialogueContents from "./DialogueContent";
-import { useThemeColor, useWindow, useColorScheme, Haptic } from "../../hooks/useHooks";
+import {
+  useThemeColor,
+  useWindow,
+  useColorScheme,
+  Haptic,
+  useCurrentTimeStamp,
+} from "../../hooks/useHooks";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import {
+  CODE_AWAIT,
+  CODE_SUCCESS,
   DIALOGUE_ENTRANCE,
   FriendInfoListType,
   FriendsItemProps,
@@ -43,6 +52,7 @@ import {
 import { useToast } from "react-native-toast-notifications";
 import { setStatusBarStyle, StatusBar } from "expo-status-bar";
 import { Input } from "react-native-magnus";
+import { StoreType } from "../../hooks/store";
 
 const DATA = [
   {
@@ -240,15 +250,19 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
     if (messageContent.event === 201) {
       const content: SingleChatType = {
+        ...messageContent.data,
         isSender: 0,
         userId: store.userInfo?.id || "",
-        ...messageContent.data,
       };
       Haptic();
       setChatData(chatData => [...chatData, content]);
 
       Sqlite.SqliteState.Sqlite &&
-        useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.friendsId);
+        useAddSingleChatContent(
+          Sqlite.SqliteState.Sqlite,
+          { ...content, isSuccess: CODE_SUCCESS },
+          friendInfo.friendsId
+        );
 
       // await wait();
     }
@@ -264,14 +278,15 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
           console.log(rows, "查询的符合条件数据");
 
-          if (!rows.reverse()) return;
+          if (!rows) return;
 
           setChatData(rows.reverse());
           if (limit === 12 && rows[rows.length - 1]) {
-            handleSelect({
+            updateComments({
               ...friendInfo,
               lastMessage: rows[rows.length - 1].content,
               lastMessageCount: 0,
+              finalTime: rows[rows.length - 1].timeStamp,
             });
           }
           resolve(limit);
@@ -302,17 +317,24 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     type: typeof TYPE_TEXT | typeof TYPE_IMG | typeof TYPE_AUDIO | typeof TYPE_VIDEO,
     value: string
   ) => {
-    const friendsId = friendInfo.friendsId;
+    const { friendsId, isSingleChat } = friendInfo;
 
-    const now = Math.floor(new Date().getTime() / 1000);
+    const timeStamp = useCurrentTimeStamp();
+
+    const { nickname, avatar, id } = store.userInfo as StoreType;
+
     const content: SingleChatType = {
+      nickname,
+      avatar,
+      isSingleChat,
       isSender: 1,
-      userId: store.userInfo?.id || "",
-      senderId: store.userInfo?.id || "",
+      userId: id,
+      senderId: id,
       recipient: friendsId,
       type,
       content: value,
-      timeStamp: now,
+      isSuccess: CODE_AWAIT,
+      timeStamp,
     };
 
     try {
@@ -320,7 +342,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         setChatData([...chatData, content]);
         setValue("");
         scrollToBottom(true);
-
+        // 这里需要改成 发送socket => 返回发送状态
         useAddSingleChatContent(Sqlite.SqliteState.Sqlite, content, friendInfo.friendsId);
         const sendContent = {
           event: 201,
@@ -328,7 +350,9 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
         };
         webSocketStore.socketState.socket.send(JSON.stringify(sendContent));
 
-        handleSelect({ ...friendInfo, lastMessage: value, lastMessageCount: 0 });
+        const finalTime = useCurrentTimeStamp();
+
+        updateComments({ ...friendInfo, lastMessage: value, lastMessageCount: 0, finalTime });
         return;
       }
       toast.show("发送失败  连接服务器错误");
@@ -342,17 +366,18 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   /**
    * 更新好友最后一条留言
    */
-  const handleSelect = async (FriendInfoList: FriendInfoListType & { lastMessage: string }) => {
-    const finalTime = Math.floor(new Date().getTime() / 1000);
-    const parameter = {
-      ...FriendInfoList,
-      lastMessageCount: 0,
-      finalTime,
-    };
-
+  const updateComments = async (FriendInfoList: FriendInfoListType & { lastMessage: string }) => {
     if (Sqlite.SqliteState.Sqlite) {
       try {
-        await useAddFriendMsg(Sqlite.SqliteState.Sqlite, parameter, FriendInfoList.friendsId);
+        await useAddFriendMsg(
+          Sqlite.SqliteState.Sqlite,
+          {
+            ...FriendInfoList,
+            lastMessageCount: 0,
+            finalTime: FriendInfoList.finalTime,
+          },
+          FriendInfoList.friendsId
+        );
       } catch (error) {
         console.log(error);
       }
@@ -375,6 +400,11 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   const handlePick = ({ emoji }: EmojiType) => {
     setEmojiList([emoji]);
+  };
+
+  const handleOpenEmoji = () => {
+    setMode(true);
+    setIsOpen(true);
   };
 
   return (
@@ -412,13 +442,9 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
           <FlashList
             data={chatData}
             renderItem={({ item }) => {
-              return (
-                <DialogueContents
-                  {...{ avatar: friendInfo.avatar, nickname: friendInfo.friendsName, ...item }}
-                />
-              );
+              return <DialogueContents {...item} />;
             }}
-            keyExtractor={(item, index) => String(item.timeStamp) + index}
+            keyExtractor={(item, index) => String(item.timeStamp + index)}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={120}
             keyboardDismissMode={"on-drag"}
@@ -459,40 +485,51 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
                 )}
               </View>
             </TouchableOpacity>
+            {mode ? (
+              <Input
+                style={styles.toolbarTextInput}
+                fontSize={17}
+                onChangeText={text => onChangeText(text)}
+                {...{
+                  color,
+                  value,
+                  placeholderTextColor: "#fff",
+                  textAlignVertical: "auto",
+                  maxLength: 300,
+                  bg: threeLevelBack,
+                  borderColor: threeLevelBack,
+                }}
+                // loading
+                cursorColor={backgroundColor}
+                selectTextOnFocus
+                enablesReturnKeyAutomatically
+                multiline={true}
+                suffix={
+                  value.length > 0 && (
+                    <TouchableOpacity
+                      activeOpacity={0.2}
+                      onPress={() => handleSendChatContent(TYPE_TEXT, value)}
+                    >
+                      <Feather name='send' size={20} color={color} />
+                    </TouchableOpacity>
+                  )
+                }
+              />
+            ) : (
+              <TouchableOpacity
+                style={[
+                  styles.toolbarTextInput,
+                  styleAll.center,
+                  { backgroundColor: threeLevelBack, justifyContent: "center" },
+                ]}
+                activeOpacity={0.3}
+                onLongPress={() => console.log("测试long")}
+              >
+                <Text style={[styleAll.font, { fontSize: 17 }]}>按 住 说 话</Text>
+              </TouchableOpacity>
+            )}
 
-            <Input
-              style={styles.toolbarTextInput}
-              fontSize={17}
-              onChangeText={text => onChangeText(text)}
-              {...{
-                color,
-                value,
-                returnKeyType: "send",
-                placeholderTextColor: "#fff",
-                textAlignVertical: "auto",
-                maxLength: 300,
-                bg: threeLevelBack,
-                borderColor: threeLevelBack,
-              }}
-              // loading
-              cursorColor={backgroundColor}
-              selectTextOnFocus
-              enablesReturnKeyAutomatically
-              onSubmitEditing={() => handleSendChatContent(TYPE_TEXT, value)}
-              multiline={true}
-              suffix={
-                value.length > 0 && (
-                  <TouchableOpacity
-                    activeOpacity={0.2}
-                    onPress={() => handleSendChatContent(TYPE_TEXT, value)}
-                  >
-                    <Feather name='send' size={20} color={color} />
-                  </TouchableOpacity>
-                )
-              }
-            />
-
-            <TouchableOpacity activeOpacity={0.2} onPress={() => setIsOpen(true)}>
+            <TouchableOpacity activeOpacity={0.2} onPress={handleOpenEmoji}>
               <AntDesign name='smileo' style={{ marginHorizontal: 10 }} size={29} color={color} />
             </TouchableOpacity>
 

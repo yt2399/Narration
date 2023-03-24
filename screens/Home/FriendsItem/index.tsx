@@ -1,12 +1,12 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import React from "react";
 import { styleAll } from "../../../style";
-import { useThemeColor } from "../../../hooks/useHooks";
+import { useThemeColor, useTimeStampToVisualTime } from "../../../hooks/useHooks";
 import { FriendInfoListType, FriendsItemProps } from "../../../types";
 import { Avatar } from "react-native-magnus";
 
 const FriendsItem = (FriendInfo: FriendInfoListType) => {
-  const { avatar, friendsId, friendsName, lastMessage, lastMessageCount } = FriendInfo;
+  const { avatar, friendsId, friendsName, lastMessage, lastMessageCount ,finalTime} = FriendInfo;
 
   const avatars =
     "https://img2.baidu.com/it/u=260211041,3935441240&fm=253&fmt=auto&app=120&f=JPEG?w=800&h=800";
@@ -31,7 +31,7 @@ const FriendsItem = (FriendInfo: FriendInfoListType) => {
       <View style={styles.ItemInfo}>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>
           <Text style={[styles.ItemName, { color }]}>{friendsName || "未知用户"}</Text>
-          <Text style={styles.lastNews}  >五分钟前</Text>
+          <Text style={styles.lastNews}  >{useTimeStampToVisualTime(finalTime)}</Text>
         </View>
         <View style={[styleAll.center, { flex: 1, justifyContent: "space-between" }]}>
           <Text style={styles.lastNews} numberOfLines={1} >{lastMessage || "--"}</Text>

@@ -1,11 +1,18 @@
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useEffect } from "react";
-import { usePickImage, useThemeColor, useWindow } from "../../../hooks/useHooks";
+import {
+  getUploadFileUrl,
+  usePickImage,
+  useThemeColor,
+  useUploadImg,
+  useWindow,
+} from "../../../hooks/useHooks";
 import { FontAwesome } from "@expo/vector-icons";
 import { styleAll } from "../../../style";
 import { useNavigation } from "@react-navigation/native";
 import { SingleChatType, TYPE_AUDIO, TYPE_IMG, TYPE_TEXT, TYPE_VIDEO } from "../../../types";
 import { ActionSheetRef } from "react-native-actions-sheet";
+import { useToast } from "react-native-toast-notifications";
 
 const Width = useWindow("Width");
 
@@ -14,15 +21,15 @@ type morePropsType = {
     type: typeof TYPE_TEXT | typeof TYPE_IMG | typeof TYPE_AUDIO | typeof TYPE_VIDEO,
     value: string
   ) => void;
-  hidden: ActionSheetRef  | undefined
+  hidden: ActionSheetRef | undefined;
 };
-const More = ({ sendContent ,hidden}: morePropsType) => {
+const More = ({ sendContent, hidden }: morePropsType) => {
   const Navigation = useNavigation().navigate;
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const backgroundColor = useThemeColor("background");
   const color = useThemeColor("text");
-
+  const toast = useToast();
   const Block = [
     { name: "picture", icon: "picture-o", title: "照片" },
     { name: "camera", icon: "camera", title: "拍摄" },
@@ -34,18 +41,21 @@ const More = ({ sendContent ,hidden}: morePropsType) => {
   const handleBlock = async (blockName: string) => {
     switch (blockName) {
       case "picture":
-        const ImagePickerAsset = await usePickImage();
-        let count = 0;
-        if (ImagePickerAsset) {
-          hidden && hidden.hide()
-          // while (ImagePickerAsset.length > count) {
-          //   count++;
+        try {
+          const ImagePickerAsset = await usePickImage();
 
-          // }
-          sendContent(TYPE_IMG, ImagePickerAsset[count].uri);
+          if (hidden && ImagePickerAsset) {
+
+            sendContent(TYPE_IMG, ImagePickerAsset[0].uri,);
+            const dataUrl = await useUploadImg(hidden, ImagePickerAsset, toast);
+            console.log(dataUrl);
+            
+            if (dataUrl) {
+            }
+          }
+        } catch (error) {
+          console.log(error);
         }
-
-        console.log(ImagePickerAsset);
 
         break;
       case "camera":
@@ -81,7 +91,7 @@ const More = ({ sendContent ,hidden}: morePropsType) => {
                 { backgroundColor: threeLevelBack, borderColor: color },
               ]}
             >
-              <FontAwesome name={icon} size={24} color={color} />
+              <FontAwesome name={icon as any} size={24} color={color} />
               <Text style={{ position: "absolute", bottom: -30, color }}>{title}</Text>
             </View>
           </TouchableOpacity>

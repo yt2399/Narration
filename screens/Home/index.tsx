@@ -1,13 +1,15 @@
-import { StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableHighlight, TouchableOpacity, View } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { styleAll } from "../../style";
 import {
   useColorScheme,
+  useCurrentTimeStamp,
   userAvatar,
   useSetStatusBarBackgroundColor,
   useThemeColor,
+  useTimeStampToVisualTime,
 } from "../../hooks/useHooks";
 import FriendsItem from "./FriendsItem";
 import { RowMap, SwipeListView } from "react-native-swipe-list-view";
@@ -20,25 +22,31 @@ import { setStatusBarStyle } from "expo-status-bar";
 import { Avatar, Badge, Div as Box } from "react-native-magnus";
 import ActionSheet, { ActionSheetRef } from "react-native-actions-sheet";
 import { useCreateFriendsInfoList, useDeleteSQL, useQueryFriendList } from "../../hooks/useSQLite";
+import Dialog from "../../components/Dialog";
+import FontText from "../../components/FontText";
 
+const hiatus = require("../../assets/hiatus/暂无消息.png");
 const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const backgroundColor = useThemeColor("background");
   const secondaryBack = useThemeColor("secondaryBack");
   const threeLevelBack = useThemeColor("threeLevelBack");
   const useColorSchemes = useColorScheme();
   const [userList, setUserList] = useState<FriendInfoListType[]>([]);
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const ActionSheets = useRef<ActionSheetRef>(null);
 
   const color = useThemeColor("text");
 
   const navigation = useNavigation();
   const toast = useToast();
+  const blurhash =
+    "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
       store.setCurrentEntrance(HOME_ENTRANCE);
       store.setIsActivityIndicator(true);
+      useTimeStampToVisualTime(1679453612);
 
       setStatusBarStyle("inverted");
       useSetStatusBarBackgroundColor(color);
@@ -96,11 +104,12 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   };
 
   const deleteRow = (rowMap: RowMap<FriendInfoListType>, rowKey: string) => {
-    closeRow(rowMap, rowKey);
-    const newData = [...userList];
-    const prevIndex = userList.findIndex(item => item.friendsId === rowKey);
-    newData.splice(prevIndex, 1);
-    setUserList(newData);
+    setIsModalVisible(true);
+    // closeRow(rowMap, rowKey);
+    // const newData = [...userList];
+    // const prevIndex = userList.findIndex(item => item.friendsId === rowKey);
+    // newData.splice(prevIndex, 1);
+    // setUserList(newData);
   };
 
   const handleOpenExpression = () => {
@@ -121,44 +130,62 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
           <FontAwesome5 name='stream' size={24} color={backgroundColor} />
         </TouchableOpacity>
       </View>
+      {userList.length ? (
+        <SwipeListView
+          style={[{ backgroundColor }, styles.DialogueList, styleAll.androidTop]}
+          disableRightSwipe
+          data={userList}
+          renderItem={({ item }: { item: FriendInfoListType }) => (
+            <TouchableHighlight
+              onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
+              style={styles.rowFront}
+            >
+              <FriendsItem {...item} />
+            </TouchableHighlight>
+          )}
+          renderHiddenItem={({ item }, rowMap) => (
+            <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
+                onPress={() => closeRow(rowMap, item.friendsId)}
+              >
+                <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={[styles.backRightBtn, styles.backRightBtnRight]}
+                onPress={() => deleteRow(rowMap, item.friendsId)}
+              >
+                <FontText color={backgroundColor} textContent="删除" />
+              </TouchableOpacity>
+            </View>
+          )}
+          leftOpenValue={0}
+          rightOpenValue={-150}
+          previewRowKey={"0"}
+          previewOpenValue={-40}
+          previewOpenDelay={2000}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : (
+        <View
+          style={[
+            { backgroundColor },
+            styles.DialogueList,
+            styleAll.center,
+            { justifyContent: "center" },
+          ]}
+        >
+          <Image
+            style={[styles.hiatusImage]}
+            source={hiatus}
+          />
+          <Text>暂无</Text>
+        </View>
+      )}
 
-      <SwipeListView
-        style={[{ backgroundColor }, styles.DialogueList, styleAll.androidTop]}
-        disableRightSwipe
-        data={userList}
-        renderItem={({ item }: { item: FriendInfoListType }) => (
-          <TouchableHighlight
-            onPress={() => navigation.navigate("Dialogue", { friendInfo: item })}
-            style={styles.rowFront}
-          >
-            <FriendsItem {...item} />
-          </TouchableHighlight>
-        )}
-        renderHiddenItem={({ item }, rowMap) => (
-          <View style={[styles.rowBack, { backgroundColor: secondaryBack }]}>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={[styles.backRightBtn, styles.backRightBtnLeft, { backgroundColor: color }]}
-              onPress={() => closeRow(rowMap, item.friendsId)}
-            >
-              <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>标记已读</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={[styles.backRightBtn, styles.backRightBtnRight]}
-              onPress={() => deleteRow(rowMap, item.friendsId)}
-            >
-              <Text style={{ color: backgroundColor, fontFamily: "Inter-Black" }}>删除</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-        leftOpenValue={0}
-        rightOpenValue={-150}
-        previewRowKey={"0"}
-        previewOpenValue={-40}
-        previewOpenDelay={2000}
-        showsVerticalScrollIndicator={false}
-      />
+      <Dialog {...{ isModalVisible }} />
 
       <ActionSheet
         ref={ActionSheets}
@@ -244,5 +271,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     overflow: "hidden",
+  },
+  hiatusImage: {
+    width: 200,
+    height: 200,
+    marginBottom:"40%"
   },
 });
