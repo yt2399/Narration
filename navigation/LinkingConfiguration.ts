@@ -30,6 +30,7 @@ const linking: LinkingOptions<RootStackParamList> = {
         screens: {
           DialogueScreen: "Dialogue",
         },
+        
       },
       Mine: {
         //设置子页面路由

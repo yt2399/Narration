@@ -39,8 +39,6 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   const navigation = useNavigation();
   const toast = useToast();
-  const blurhash =
-    "|rF?hV%2WCj[ayj[a|j[az_NaeWBj@ayfRayfQfQM{M|azj[azf6fQfQfQIpWXofj[ayj[j[fQayWCoeoeaya}j[ayfQa{oLj?j[WVj[ayayj[fQoff7azayj[ayj[j[ayofayayayj[fQj[ayayj[ayfjj[j[ayjuayj[";
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
@@ -58,37 +56,38 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
       // Sqlite.SqliteState?.Sqlite && useDeleteSQL(Sqlite.SqliteState?.Sqlite)
       //获取到Info
-      if (!store.isConnect) {
+      if (!store.isConnect && webSocketStore.socketState.isReady && Sqlite.SqliteState.Sqlite) {
         //判断是否连接
-        if (webSocketStore.socketState.isReady && Sqlite.SqliteState.Sqlite) {
-          //执行用户信息连接绑定
-          webSocketStore.socketState.socket?.send(
-            JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
-          );
+        // if (webSocketStore.socketState.isReady && Sqlite.SqliteState.Sqlite) {
+        //执行用户信息连接绑定
+        webSocketStore.socketState.socket?.send(
+          JSON.stringify({ event: 101, data: { token: store.userInfo.token } })
+        );
 
-          //创建好友基础列表库
+        //创建好友基础列表库
 
-          useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
+        useCreateFriendsInfoList(Sqlite.SqliteState.Sqlite);
 
-          webSocketStore.socketState.socket?.addEventListener("message", e => {
-            const { data } = e;
+        webSocketStore.socketState.socket?.addEventListener("message", e => {
+          const { data } = e;
 
-            if (data === "PONG") return;
+          if (data === "PONG") return;
 
-            const messageContent = JSON.parse(data) as messageContentType;
+          const messageContent = JSON.parse(data) as messageContentType;
 
-            if (messageContent.event === INFO_CODE) {
-              store.setIsConnect(true);
-            }
-          });
-        }
+          if (messageContent.event === INFO_CODE) {
+            store.setIsConnect(true);
+          }
+        });
       }
 
       if (Sqlite.SqliteState.Sqlite) {
         try {
-          const result = await useQueryFriendList(Sqlite.SqliteState.Sqlite);
-
-          setUserList(result[0].rows as unknown as FriendInfoListType[]);
+          const result = await useQueryFriendList(Sqlite.SqliteState.Sqlite) 
+          if(result){
+            setUserList(result[0].rows as unknown as FriendInfoListType[]);
+          }
+          
         } catch (error) {
           console.log(error, "获取好友消息列表失败");
         }
@@ -157,7 +156,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
                 style={[styles.backRightBtn, styles.backRightBtnRight]}
                 onPress={() => deleteRow(rowMap, item.friendsId)}
               >
-                <FontText color={backgroundColor} textContent="删除" />
+                <FontText color={backgroundColor} textContent='删除' />
               </TouchableOpacity>
             </View>
           )}
@@ -177,11 +176,7 @@ const Homes = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             { justifyContent: "center" },
           ]}
         >
-          <Image
-            style={[styles.hiatusImage]}
-            source={hiatus}
-          />
-          <Text>暂无</Text>
+          <Image style={[styles.hiatusImage]} source={hiatus} />
         </View>
       )}
 
@@ -275,6 +270,6 @@ const styles = StyleSheet.create({
   hiatusImage: {
     width: 200,
     height: 200,
-    marginBottom:"40%"
+    marginBottom: "40%",
   },
 });

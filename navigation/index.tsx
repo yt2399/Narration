@@ -34,13 +34,13 @@ export default function Navigation({ colorScheme }: { colorScheme: ColorSchemeNa
   );
 }
 
-type StartScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Start">;
-type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Home">;
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Login">;
+type StartScreenNavigationProp    = NativeStackNavigationProp<RootStackParamList, "Start">;
+type HomeScreenNavigationProp     = NativeStackNavigationProp<RootStackParamList, "Home">;
+type LoginScreenNavigationProp    = NativeStackNavigationProp<RootStackParamList, "Login">;
 type DialogueScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Dialogue">;
-type MineScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, "Mine">;
-type FriendsListNavigationProp = NativeStackNavigationProp<RootStackParamList, "FriendsList">;
-type FriendsDetailsProp = NativeStackNavigationProp<RootStackParamList, "FriendsDetails">;
+type MineScreenNavigationProp     = NativeStackNavigationProp<RootStackParamList, "Mine">;
+type FriendsListNavigationProp    = NativeStackNavigationProp<RootStackParamList, "FriendsList">;
+type FriendsDetailsProp           = NativeStackNavigationProp<RootStackParamList, "FriendsDetails">;
 
 type StartProps = {
   navigation: StartScreenNavigationProp;

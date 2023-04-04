@@ -33,7 +33,7 @@ const useSqliteState = new useSqlite();
  */
 
 /**
- * 创建好友信息列表
+ * @创建好友信息列表
  */
 export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
   Sqlite.transaction(Db => {
@@ -48,20 +48,20 @@ export function useCreateFriendsInfoList(Sqlite: SQLite.WebSQLDatabase) {
           finalTime INT NOT NULL,
           star INT NOT NULL,
           updTime INT NOT NULL
-          )`
+          )` 
     );
   });
 }
 
 /**
- * 新增好友列表信息
+ * @新增好友列表信息
  */
 export function useAddFriendMsg(
   Sqlite: SQLite.WebSQLDatabase,
   parameter: FriendInfoListType,
   friendId: string
 ) {
-  const { avatar, friendsName, lastMessage, finalTime, star, updTime, lastMessageCount } =
+  const { avatar,isSingleChat, friendsName, lastMessage, finalTime, star, updTime, lastMessageCount } =
     parameter;
 
   return new Promise((resolve, reject) => {
@@ -69,10 +69,11 @@ export function useAddFriendMsg(
       Db => {
         Db.executeSql(
           `
-          INSERT INTO u_friends_info (friendsId,avatar,friendsName,lastMessage,finalTime,star,updTime,lastMessageCount) 
-          VALUES ('${friendId}','${avatar}','${friendsName}','${lastMessage}',${finalTime},${star},${updTime},${lastMessageCount})
+          INSERT INTO u_friends_info (friendsId,avatar,isSingleChat,friendsName,lastMessage,finalTime,star,updTime,lastMessageCount) 
+          VALUES ('${friendId}','${avatar}','${avatar}','${friendsName}','${lastMessage}',${finalTime},${star},${updTime},${lastMessageCount})
           ON CONFLICT(friendsId) DO UPDATE SET 
           avatar = '${avatar}', 
+          isSingleChat = '${isSingleChat}',
           friendsName = '${friendsName}', 
           lastMessage = '${lastMessage}', 
           lastMessageCount = '${lastMessageCount}',
@@ -92,7 +93,7 @@ export function useAddFriendMsg(
 }
 
 /**
- * 查询所有好友列表
+ * @查询所有好友列表
  */
 export function useQueryFriendList(Sqlite: SQLite.WebSQLDatabase) {
   return new Promise<SQLite.ResultSet[]>((resolve, reject) => {
@@ -125,7 +126,6 @@ export async function useCreateSingleChatContent(Sqlite: SQLite.WebSQLDatabase, 
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           nickname TEXT NOT NULL,
           avatar TEXT,
-          isSingleChat INT NOT NULL,
           isSender INT NOT NULL,
           senderId TEXT NOT NULL,
           recipient TEXT NOT NULL,
@@ -146,19 +146,18 @@ export function useAddSingleChatContent(
   parameter: SingleChatType,
   friendId: string
 ) {
-  const { nickname, avatar,isSingleChat, isSender, senderId, recipient, type, content, isSuccess, timeStamp } =
+  const { nickname, avatar, isSender, senderId, recipient, type, content, isSuccess, timeStamp } =
     parameter;
 
   return new Promise((resolve, reject) => {
     Sqlite.transaction(
       Db => {
-        Db.executeSql(
+        Db.executeSql( 
           `INSERT INTO u_chat_${friendId} (
-            nickname,avatar,isSingleChat,
-            isSender,senderId,recipient,
+            nickname,avatar,isSender,senderId,recipient,
             type,content,isSuccess,timeStamp
-            ) VALUES (?,?,?,?,?,?,?,?,?,?)`,
-          [nickname, avatar,isSingleChat, isSender, senderId, recipient, type, content, isSuccess, timeStamp]
+            ) VALUES (?,?,?,?,?,?,?,?,?)`,
+          [nickname, avatar, isSender, senderId, recipient, type, content, isSuccess, timeStamp]
         );
       },
       error => reject(error),

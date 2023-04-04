@@ -158,23 +158,18 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   let limit = 0;
 
   const [value, setValue] = useState("");
-
   const [chatData, setChatData] = useState<SingleChatType[] | []>([]);
-
   const [refreshing, setRefreshing] = useState(false);
-
   const [isRefreshControl, setIsRefreshControl] = useState(true);
-
   const [keyboardHeight, setKeyboardHeight] = useState(0);
-
   const [openMore, setOpenMore] = useState(false);
-
   const FlashLists = useRef<FlashList<SingleChatType>>(null);
-
   const navigation = useNavigation();
 
-  //true:文本输入模式
-  //false:语音输入
+  //存储聊天框高度
+  const [chatHeight, setChatHeight] = useState(0)
+
+  //true:文本输入模式 false:语音输入
   const [mode, setMode] = useState(true);
 
   const ColorScheme = useColorScheme();
@@ -182,13 +177,9 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const router = useRoute();
 
   const ActionSheets = useRef<ActionSheetRef>(null);
-
   const backgroundColor = useThemeColor("background");
-
   const secondaryBack = useThemeColor("secondaryBack");
-
   const threeLevelBack = useThemeColor("threeLevelBack");
-
   const color = useThemeColor("text");
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -309,6 +300,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   function scrollToBottom(animated?: boolean) {
     setTimeout(() => {
+
       chatData.length && FlashLists.current?.scrollToEnd({ animated });
     }, 200);
   }
@@ -368,6 +360,8 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
    */
   const updateComments = async (FriendInfoList: FriendInfoListType & { lastMessage: string }) => {
     if (Sqlite.SqliteState.Sqlite) {
+      console.log(FriendInfoList);
+
       try {
         await useAddFriendMsg(
           Sqlite.SqliteState.Sqlite,
@@ -431,11 +425,11 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             bottom:
               Platform.OS === "ios"
                 ? 0
-                : chatData.length > 6
-                ? keyboardHeight
+                : chatHeight > 400
                   ? keyboardHeight
-                  : 0
-                : 0,
+                    ? keyboardHeight
+                    : 0
+                  : 0,
             paddingBottom: Platform.OS === "ios" ? 70 : 0,
           }}
         >
@@ -444,7 +438,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
             renderItem={({ item }) => {
               return <DialogueContents {...item} />;
             }}
-            keyExtractor={(item, index) => String(item.timeStamp + index)}
+            keyExtractor={(item, index) => String(index)}
             showsVerticalScrollIndicator={false}
             estimatedItemSize={120}
             keyboardDismissMode={"on-drag"}
@@ -456,6 +450,7 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
                 title={isRefreshControl ? "加载聊天内容" : "已全部加载完毕"}
               />
             }
+            onContentSizeChange={(_, h) => { setChatHeight(h) }}
             onLayout={_ => scrollToBottom(true)}
             // onScrollToIndexFailed={e => scrollToBottom(true)}
             ref={FlashLists}
@@ -499,7 +494,6 @@ const Dialogue = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
                   bg: threeLevelBack,
                   borderColor: threeLevelBack,
                 }}
-                // loading
                 cursorColor={backgroundColor}
                 selectTextOnFocus
                 enablesReturnKeyAutomatically

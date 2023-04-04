@@ -9,17 +9,23 @@ import { styleAll } from "../../../style";
 import { useAddFriendMsg } from "../../../hooks/useSQLite";
 import { useNavigation } from "@react-navigation/native";
 
+/**
+* @param userList  好友信息列表
+* @param Sqlite   本地sql
+*/
 type FriendsAllProps = {
   userList: FriendsItemProps[];
   Sqlite: SQLite.WebSQLDatabase | null;
 };
+
+
+/** @好友列表 */
 
 const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   const MemoUserList = useMemo(() => userList, []);
   const Navigation = useNavigation();
   const Line = useThemeColor("line");
   const color = useThemeColor("text");
-
 
   const handleSelect = async (FriendsItem: FriendsItemProps) => {
 
@@ -37,36 +43,35 @@ const FriendsAll = ({ userList, Sqlite }: FriendsAllProps) => {
   };
 
   return (
-    <FlashList
-      data={MemoUserList}
-      renderItem={({ item }) => {
-        return (
-          <TouchableHighlight
-            underlayColor={Line}
-            activeOpacity={0.7}
-            onPress={() => handleSelect(item)}
-          >
-            <Box p={10} row alignItems={"center"} borderBottomWidth={1} borderColor={Line}>
-              <Avatar
-                shadow={1}
-                rounded='lg'
-                size={40}
-                source={{
-                  uri: item.avatar || userAvatar,
-                }}
-              />
-              <Text style={[styleAll.font, { marginLeft: 20, color }]}>{item.nickname}</Text>
-            </Box>
-          </TouchableHighlight>
-        );
-        //   return <DialogueContents avatar={friendInfo.avatar} {...item} />;
-      }}
-      keyExtractor={(item, index) => String(item.id) + index}
-      showsVerticalScrollIndicator={false}
-      estimatedItemSize={119}
-      keyboardDismissMode={"on-drag"}
-      initialScrollIndex={userList.length > 11 ? 11 : 0}
-    />
+    <Box p={10} row alignItems={"center"} justifyContent={'center'} h={'100%'} >
+      {
+        MemoUserList.length ? <FlashList
+          data={MemoUserList}
+          renderItem={({ item }) => {
+            return (
+              <TouchableHighlight
+                underlayColor={Line}
+                activeOpacity={0.7}
+                onPress={() => handleSelect(item)}
+              >
+                <Box p={10} row alignItems={"center"} borderBottomWidth={1} borderColor={Line}>
+                  <Avatar shadow={1} rounded='lg' size={40} source={{ uri: item.avatar || userAvatar }} />
+                  <Text style={[styleAll.font, { marginLeft: 20, color }]}>{item.nickname}</Text>
+                </Box>
+              </TouchableHighlight>
+            );
+          }}
+          keyExtractor={(item, index) => String(item.id) + index}
+          showsVerticalScrollIndicator={false}
+          estimatedItemSize={119}
+          keyboardDismissMode={"on-drag"}
+          initialScrollIndex={userList.length > 11 ? 11 : 0}
+        /> :
+          <Text>暂无好友</Text>
+      }
+
+    </Box>
+
   );
 };
 

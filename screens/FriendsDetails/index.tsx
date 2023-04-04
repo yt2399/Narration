@@ -24,6 +24,7 @@ type paramsType = {
 };
 
 
+/** @好友详情页面 */
 
 const FriendsDetails = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const navigation = useNavigation();

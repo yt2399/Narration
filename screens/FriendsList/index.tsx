@@ -1,4 +1,4 @@
-import { StyleSheet, TextInput, useWindowDimensions, View, Animated } from "react-native";
+import { StyleSheet, TextInput, useWindowDimensions, View, Animated, Text } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { FriendsItemProps, MAIL_CODE, ProviderProps } from "../../types";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -41,8 +41,8 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("focus", async () => {
-      setStatusBarStyle('auto');
-      useSetStatusBarBackgroundColor('#fff');
+      setStatusBarStyle("auto");
+      useSetStatusBarBackgroundColor("#fff");
     });
 
     return unsubscribe;
@@ -55,12 +55,13 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       return;
     }
     const { id } = store.userInfo;
-    console.log(webSocketStore.socketState.isReady, id);
-
-    if (webSocketStore.socketState.isReady) {
+    
+    if (webSocketStore['socketState']['isReady']) {
       getFriendsAll();
 
-      webSocketStore.socketState.socket?.send(
+
+      /**  */
+      webSocketStore['socketState']['socket']?.send(
         JSON.stringify({ event: 199, data: { id, type: MAIL_CODE } })
       );
     }
@@ -70,7 +71,7 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
   const [userList, setUserList] = useState<FriendsItemProps[]>([]);
 
   const getFriendsAll = () => {
-    webSocketStore.socketState.socket?.addEventListener("message", e => {
+    webSocketStore['socketState']['socket']?.addEventListener("message", e => {
       const { data } = e;
       console.log(data);
 
@@ -79,7 +80,8 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
       const messageContent = JSON.parse(data) as messageContentType;
 
       if (messageContent.event === MAIL_CODE) {
-        setUserList(messageContent.data.dataList);
+        const { data }: { data: { dataList: [FriendsItemProps] | [] } } = messageContent;
+        setUserList([...data.dataList]);
       }
     });
   };
@@ -90,9 +92,12 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
     console.log("触发搜索");
   };
 
-  const all = () => <FriendsAll Sqlite={Sqlite.SqliteState.Sqlite} userList={userList} />;
+  const all = () => <FriendsAll {...{ Sqlite: Sqlite.SqliteState.Sqlite, userList }} />;
+
   const groupChat = () => <GroupChat />;
+
   const starTarget = () => <StarTarget />;
+
   const newFriends = () => <NewFriends />;
 
   return (
@@ -117,15 +122,9 @@ const FriendsList = ({ webSocketStore, store, Sqlite }: ProviderProps) => {
           maxLength={300}
         />
       </View>
-
       <TabView
         navigationState={{ index, routes }}
-        renderScene={SceneMap({
-          all,
-          groupChat,
-          starTarget,
-          newFriends,
-        })}
+        renderScene={SceneMap({ all, groupChat, starTarget, newFriends })}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
         renderTabBar={prop => <TabBar {...{ ...prop, setIndex }} />}

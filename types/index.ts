@@ -11,10 +11,10 @@ declare global {
 }
 
 export type UserInfo = {
-  avatar: string;
-  id: string;
+  avatar  : string;
+  id      : string;
   nickname: string;
-  token: string;
+  token   : string;
 };
 
 export type RootTabParamList = {
@@ -22,18 +22,18 @@ export type RootTabParamList = {
 };
 
 export type RootStackParamList = {
-  Start: undefined;
-  Login: undefined;
-  Home: undefined;
-  Mine: undefined;
-  Camera: undefined;
+  Start         : undefined;
+  Login         : undefined;
+  Home          : undefined;
+  Mine          : undefined;
+  Camera        : undefined;
   FriendsDetails: { friendInfo: FriendInfoListType };
-  NotFound: undefined;
-  FriendsList: undefined;
-  Dialogue: { friendInfo: FriendInfoListType };
+  NotFound      : undefined;
+  FriendsList   : undefined;
+  Dialogue      : { friendInfo: FriendInfoListType };
 };
 
-/**
+  /**
  * @param nickname      发送人名称
  * @param avatar        发送人头像
  * @param isSingleChat  是否为单聊模式   0为群聊  1为单聊
@@ -43,20 +43,20 @@ export type RootStackParamList = {
  *
  */
 export interface SingleChatType {
-  nickname: string;
-  avatar: string;
+  nickname    : string;
+  avatar      : string;
   isSingleChat: number;
-  isSender: number;
-  userId: string;
-  senderId: string;
-  recipient: string;
-  type: 1 | 2 | 3 | 4;
-  isSuccess: typeof CODE_SUCCESS | typeof CODE_AWAIT | typeof CODE_FAIL;
-  content: string;
-  timeStamp: number;
+  isSender    : number;
+  userId      : string;
+  senderId    : string;
+  recipient   : string;
+  type        : 1 | 2 | 3 | 4;
+  isSuccess   : typeof CODE_SUCCESS | typeof CODE_AWAIT | typeof CODE_FAIL;
+  content     : string;
+  timeStamp   : number;
 }
 
-/**
+  /**
  * @param isSingleChat  是否为单聊模式   0为群聊  1为单聊
  * @param lastMessage   最后一条留言
  * @param star          0、未标星 2、星标好友
@@ -64,80 +64,82 @@ export interface SingleChatType {
  */
 
 export interface FriendInfoListType {
-  isSingleChat:number
-  friendsId: string;
-  avatar: string;
-  friendsName: string;
-  lastMessage: string;
+  isSingleChat    : number
+  friendsId       : string;
+  avatar          : string;
+  friendsName     : string;
+  lastMessage     : string;
   lastMessageCount: number;
-  // msgType: typeof TYPE_TEXT | typeof TYPE_IMG | typeof TYPE_AUDIO | typeof TYPE_VIDEO
+    // msgType: typeof TYPE_TEXT | typeof TYPE_IMG | typeof TYPE_AUDIO | typeof TYPE_VIDEO
   finalTime: number;
-  star: number;
-  updTime: number;
+  star     : number;
+  updTime  : number;
 }
 
 export type SingleChatContentType = {
-  sender_id: string;
-  recipient: string;
-  type: 1 | 2 | 3 | 4;
-  content: string;
+  sender_id : string;
+  recipient : string;
+  type      : 1 | 2 | 3 | 4;
+  content   : string;
   time_stamp: number;
 };
 
 export type QueryDemandType = {
-  surface: string;
+  surface  : string;
   recipient: string | number;
-  senderId: string | number;
+  senderId : string | number;
 };
 
-//传输消息Type
-export const TYPE_TEXT = 1;
-export const TYPE_IMG = 2;
+  //传输消息Type
+export const TYPE_TEXT  = 1;
+export const TYPE_IMG   = 2;
 export const TYPE_AUDIO = 3;
 export const TYPE_VIDEO = 4;
 
-//消息状态
+  //消息状态
 export const CODE_SUCCESS = 1;
-export const CODE_AWAIT = 0;
-export const CODE_FAIL = -1;
+export const CODE_AWAIT   = 0;
+export const CODE_FAIL    = -1;
 
-//页面入口
+  //页面入口
 export const HOME_ENTRANCE = 101;
 
-//聊天入口
+  //聊天入口
 export const DIALOGUE_ENTRANCE = 101;
 
-//登陆入口
+  //登陆入口
 export const LOGIN_ENTRANCE = 103;
 
-//socket协议
-export const ERROR_CODE = 102; //返回错误
-export const INFO_CODE = 101; //返回校验成功
-export const MAIL_CODE = 127; //通讯录返回
+                                //socket协议
+export const ERROR_CODE = 102;  //返回错误
+export const INFO_CODE = 101;   //返回校验成功
+export const MAIL_CODE = 127;   //通讯录返回
 
 export interface userDataInfoType {
-  token: string;
+  token   : string;
   nickname: string;
-  avatar: string;
-  id: string;
+  avatar  : string;
+  id      : string;
 }
 
 export type ProviderProps = {
   webSocketStore: WebSocketStore;
-  store: Store;
-  Sqlite: useSqlite;
+  store         : Store;
+  Sqlite        : useSqlite;
 };
 
+
+
 export type FriendsItemProps = {
-  isSingleChat:number
-  accountId: number;
-  avatar: string;
-  crtTime: number;
-  id: string;
-  label: string;
-  nickname: string;
-  p: number;
-  sex: number;
-  star: number;
-  updTime: number;
+  isSingleChat: number;
+  accountId   : number;
+  avatar      : string;
+  crtTime     : number;
+  id          : string;
+  label       : string;
+  nickname    : string;
+  p           : number;
+  sex         : number;
+  star        : number;
+  updTime     : number;
 };
