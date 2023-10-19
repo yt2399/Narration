@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { userDataInfoType } from "../types";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { userDataInfoType } from '../types';
 
 /**
  * 存储Storage String内容
@@ -36,7 +36,7 @@ const useStoreObject = async (itemName: string, value: object) => {
 const useGetStoreString = async (itemName: string) => {
   try {
     const value = await AsyncStorage.getItem(itemName);
-    console.log(value, "value");
+    console.log(value, 'value');
 
     if (value !== null) {
       // value previously stored
@@ -55,8 +55,8 @@ const useGetStoreString = async (itemName: string) => {
 const useGetStoreObject = (itemName: string) => {
   return new Promise(async (resolve, reject) => {
     const jsonValue = await AsyncStorage.getItem(itemName);
-    if (typeof jsonValue === "string") {
-      resolve(JSON.parse(jsonValue) as userDataInfoType)
+    if (typeof jsonValue === 'string') {
+      resolve(JSON.parse(jsonValue) as userDataInfoType);
       return;
     }
     reject(jsonValue);

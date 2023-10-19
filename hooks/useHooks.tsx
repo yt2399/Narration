@@ -187,23 +187,25 @@ export const useUploadImg = async (
   const maxM = 50 * 1024 * 1024;
   hidden && hidden.hide();
   const { type, uri, fileSize, base64 } = ImagePickerAsset[one];
-  //校验文件
+  //限制文件大小
   if (fileSize && fileSize > maxM && !type) {
     toast.show(fileSize > maxM ? "上传视频超过50M 已取消" : "上传视频大小未知 已取消", {
       placement: "top",
     });
     return;
   }
-
+  //校验文件类型
   if (type) {
     let newBase64: string = "";
     const fileName = uri.split("/").pop() as string;
+
     if (!base64) {
+      //获取文件base64 存储
       newBase64 = await FileSystem.readAsStringAsync(uri, {
         encoding: FileSystem.EncodingType.Base64,
       });
     }
-
+    //转为二进制
     const bytes = new Uint8Array(
       atob(base64 || newBase64)
         .split("")

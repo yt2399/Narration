@@ -13,6 +13,7 @@ react-native/expo 实现的设计聊天app
 ### 1.3.10 版本更新详情
 
 ![首页UI](./mdImg/1678413238812.jpg "首页UI")     ![首页UI](./mdImg/Snipaste_2023-03-10_09-55-21.png "首页UI")
+![首页UI](./mdImg/img23.png "聊天界面UI")  ![首页UI](./mdImg/img33.png "聊天界面UI")
 
 这次更新数量比较大，整体功能、UI重构、BUG修复等等。 🥳
 
